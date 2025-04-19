@@ -58,8 +58,7 @@ export default function LoginPage() {
             </CardHeader>
             <CardContent>
               <SignIn
-                routing="path"
-                path="/sign-in"
+                routing="hash"
                 signUpUrl="/sign-up"
                 appearance={{
                   elements: {
@@ -70,7 +69,7 @@ export default function LoginPage() {
                 }}
                 redirectUrl={selectedRole === "teacher" ? "/teacher/dashboard" : "/dashboard"}
                 initialValues={{
-                  emailAddress: selectedRole === "teacher" ? "teacher@example.com" : "student@example.com",
+                  emailAddress: selectedRole === "teacher" ? "teacher@spit.ac.in" : "student@spit.ac.in",
                 }}
               />
             </CardContent>

@@ -45,7 +45,7 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
   useEffect(() => {
     setIsMounted(true)
     // Check if the user is on a teacher page
-    setIsTeacher(pathname?.includes("/teacher"))
+    setIsTeacher(pathname?.includes("/teacher") ?? false)
   }, [pathname])
 
   const toggleSidebar = () => {
