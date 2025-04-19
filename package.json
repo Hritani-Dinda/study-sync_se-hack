@@ -10,6 +10,8 @@
     "socket-server": "node server/server.js"
   },
   "dependencies": {
+    "@clerk/nextjs": "^6.16.0",
+    "@emotion/is-prop-valid": "latest",
     "@emotion/is-prop-valid": "latest",
     "@hookform/resolvers": "^3.9.1",
     "@radix-ui/react-accordion": "1.2.2",
@@ -46,11 +48,13 @@
     "cors": "^2.8.5",
     "date-fns": "4.1.0",
     "embla-carousel-react": "8.5.1",
+    "framer-motion": "latest",
     "express": "^5.1.0",
     "framer-motion": "latest",
     "input-otp": "1.4.1",
     "lucide-react": "^0.454.0",
     "next": "15.2.4",
+    "next-auth": "^4.24.11",
     "next-themes": "^0.4.4",
     "react": "^19",
     "react-day-picker": "8.10.1",
@@ -69,6 +73,7 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@types/next-auth": "^3.13.0",
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",

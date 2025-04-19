@@ -15,6 +15,7 @@ import Leaderboard from "./pages/Leaderboard"
 import Profile from "./pages/Profile"
 import NotFound from "./pages/NotFound"
 import { ThemeProvider } from "./context/ThemeContext"
+import { SessionProvider } from "next-auth/react"
 
 const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false)
