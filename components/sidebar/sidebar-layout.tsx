@@ -18,6 +18,9 @@ import {
   X,
   Moon,
   Sun,
+  GraduationCap,
+  ClipboardList,
+  Globe,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useTheme } from "next-themes"
@@ -55,8 +58,11 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
   const navigation = [
     { name: "Dashboard", href: "/dashboard", icon: Home },
     { name: "Courses", href: "/courses", icon: BookOpen },
+    { name: "Assignments", href: "/assignments", icon: ClipboardList },
     { name: "Content Hub", href: "/content-hub", icon: FileText },
+    { name: "Professors", href: "/professors", icon: GraduationCap },
     { name: "Quizzes", href: "/quiz", icon: Trophy },
+    { name: "Competitions", href: "/competitions", icon: Globe },
     { name: "Leaderboard", href: "/leaderboard", icon: BarChart3 },
     { name: "Profile", href: "/profile", icon: User },
   ]
@@ -80,7 +86,7 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
         <div className="flex h-full flex-col">
           <div className="flex items-center justify-between px-4 py-5">
             <Link href="/dashboard" className="flex items-center space-x-2" onClick={closeSidebar}>
-              <span className="text-xl font-bold">Campus LMS</span>
+              <span className="text-xl font-bold">StudySync</span>
             </Link>
             <Button variant="ghost" size="icon" onClick={toggleSidebar} className="lg:hidden">
               <X className="h-5 w-5" />
@@ -103,8 +109,10 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
                 href={item.href}
                 onClick={closeSidebar}
                 className={cn(
-                  "group flex items-center rounded-md px-2 py-2 text-sm font-medium",
-                  pathname === item.href ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-muted",
+                  "group flex items-center rounded-md px-2 py-2 text-sm font-medium transition-colors",
+                  pathname === item.href || pathname?.startsWith(`${item.href}/`)
+                    ? "bg-primary text-primary-foreground"
+                    : "text-foreground hover:bg-muted",
                 )}
               >
                 <item.icon className="mr-3 h-5 w-5 flex-shrink-0" />

@@ -1,18 +1,18 @@
-"use client";
+"use client"
 
-import type React from "react";
-import { useState } from "react";
-import Navbar from "../components/Navbar";
-import Sidebar from "../components/Sidebar";
-import LeaderboardCard from "../components/LeaderboardCard";
+import type React from "react"
+import { useState } from "react"
+import Navbar from "../components/Navbar"
+import Sidebar from "../components/Sidebar"
+import LeaderboardCard from "../components/LeaderboardCard"
 
 interface LeaderboardProps {
-  onLogout: () => void;
+  onLogout: () => void
 }
 
 const Leaderboard: React.FC<LeaderboardProps> = ({ onLogout }) => {
-  const [activeTab, setActiveTab] = useState("overall");
-  const [timeframe, setTimeframe] = useState("weekly");
+  const [activeTab, setActiveTab] = useState("overall")
+  const [timeframe, setTimeframe] = useState("weekly")
 
   return (
     <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
@@ -23,12 +23,8 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ onLogout }) => {
           <div className="container mx-auto px-4 py-6">
             <div className="flex flex-col justify-between space-y-4 md:flex-row md:items-center md:space-y-0">
               <div>
-                <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
-                  Leaderboard
-                </h2>
-                <p className="text-gray-600 dark:text-gray-300">
-                  See how you rank against other students
-                </p>
+                <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Leaderboard</h2>
+                <p className="text-gray-600 dark:text-gray-300">See how you rank against other students</p>
               </div>
               <div className="flex items-center space-x-2">
                 <button className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700">
@@ -61,11 +57,7 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ onLogout }) => {
                           : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
                       } whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium capitalize`}
                     >
-                      {tab === "overall"
-                        ? "Overall"
-                        : tab === "courses"
-                        ? "By Course"
-                        : "Quiz Battles"}
+                      {tab === "overall" ? "Overall" : tab === "courses" ? "By Course" : "Quiz Battles"}
                     </button>
                   ))}
                 </nav>
@@ -80,46 +72,30 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ onLogout }) => {
                       <div className="bg-gradient-to-b from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-900 border-2 border-gray-300 dark:border-gray-700 rounded-lg shadow-sm">
                         <div className="p-4 text-center border-b border-gray-200 dark:border-gray-700">
                           <i className="feather-award h-8 w-8 mx-auto text-gray-500"></i>
-                          <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-                            2nd Place
-                          </h3>
+                          <h3 className="text-xl font-semibold text-gray-900 dark:text-white">2nd Place</h3>
                         </div>
                         <div className="p-6 text-center">
                           <div className="mx-auto h-16 w-16 rounded-full border-2 border-gray-300 bg-indigo-100 flex items-center justify-center text-indigo-600 dark:bg-gray-700 dark:text-white dark:border-gray-600">
                             JD
                           </div>
-                          <h3 className="mt-2 text-lg font-semibold text-gray-900 dark:text-white">
-                            Jane Doe
-                          </h3>
-                          <p className="text-gray-600 dark:text-gray-300">
-                            Computer Science
-                          </p>
-                          <div className="mt-2 text-2xl font-bold text-gray-900 dark:text-white">
-                            9,850 pts
-                          </div>
+                          <h3 className="mt-2 text-lg font-semibold text-gray-900 dark:text-white">Jane Doe</h3>
+                          <p className="text-gray-600 dark:text-gray-300">Computer Science</p>
+                          <div className="mt-2 text-2xl font-bold text-gray-900 dark:text-white">9,850 pts</div>
                         </div>
                       </div>
 
                       <div className="bg-gradient-to-b from-yellow-100 to-yellow-50 dark:from-yellow-900/30 dark:to-yellow-800/20 border-2 border-yellow-300 dark:border-yellow-700 rounded-lg shadow-sm">
                         <div className="p-4 text-center border-b border-yellow-200 dark:border-yellow-800">
                           <i className="feather-award h-8 w-8 mx-auto text-yellow-500"></i>
-                          <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-                            1st Place
-                          </h3>
+                          <h3 className="text-xl font-semibold text-gray-900 dark:text-white">1st Place</h3>
                         </div>
                         <div className="p-6 text-center">
                           <div className="mx-auto h-20 w-20 rounded-full border-4 border-yellow-300 bg-indigo-100 flex items-center justify-center text-indigo-600 dark:bg-gray-700 dark:text-white dark:border-yellow-600">
                             JS
                           </div>
-                          <h3 className="mt-2 text-lg font-semibold text-gray-900 dark:text-white">
-                            John Smith
-                          </h3>
-                          <p className="text-gray-600 dark:text-gray-300">
-                            Computer Science
-                          </p>
-                          <div className="mt-2 text-2xl font-bold text-gray-900 dark:text-white">
-                            12,450 pts
-                          </div>
+                          <h3 className="mt-2 text-lg font-semibold text-gray-900 dark:text-white">John Smith</h3>
+                          <p className="text-gray-600 dark:text-gray-300">Computer Science</p>
+                          <div className="mt-2 text-2xl font-bold text-gray-900 dark:text-white">12,450 pts</div>
                           <span className="mt-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300">
                             Top Performer
                           </span>
@@ -129,23 +105,15 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ onLogout }) => {
                       <div className="bg-gradient-to-b from-amber-50 to-orange-50 dark:from-amber-900/10 dark:to-orange-900/10 border-2 border-orange-300 dark:border-orange-800 rounded-lg shadow-sm">
                         <div className="p-4 text-center border-b border-orange-200 dark:border-orange-800">
                           <i className="feather-award h-8 w-8 mx-auto text-orange-500"></i>
-                          <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-                            3rd Place
-                          </h3>
+                          <h3 className="text-xl font-semibold text-gray-900 dark:text-white">3rd Place</h3>
                         </div>
                         <div className="p-6 text-center">
                           <div className="mx-auto h-16 w-16 rounded-full border-2 border-orange-300 bg-indigo-100 flex items-center justify-center text-indigo-600 dark:bg-gray-700 dark:text-white dark:border-orange-600">
                             AJ
                           </div>
-                          <h3 className="mt-2 text-lg font-semibold text-gray-900 dark:text-white">
-                            Alex Johnson
-                          </h3>
-                          <p className="text-gray-600 dark:text-gray-300">
-                            Data Science
-                          </p>
-                          <div className="mt-2 text-2xl font-bold text-gray-900 dark:text-white">
-                            8,720 pts
-                          </div>
+                          <h3 className="mt-2 text-lg font-semibold text-gray-900 dark:text-white">Alex Johnson</h3>
+                          <p className="text-gray-600 dark:text-gray-300">Data Science</p>
+                          <div className="mt-2 text-2xl font-bold text-gray-900 dark:text-white">8,720 pts</div>
                         </div>
                       </div>
                     </div>
@@ -156,8 +124,8 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ onLogout }) => {
                         timeframe === "weekly"
                           ? "This Week's Top Performers"
                           : timeframe === "monthly"
-                          ? "This Month's Top Performers"
-                          : "All-Time Top Performers"
+                            ? "This Month's Top Performers"
+                            : "All-Time Top Performers"
                       }
                       entries={[
                         {
@@ -250,70 +218,40 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ onLogout }) => {
                   <div className="space-y-8">
                     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                       {/* Course cards */}
-                      {[
-                        "Data Structures",
-                        "Machine Learning",
-                        "Web Development",
-                        "Database Systems",
-                      ].map((course) => (
-                        <div
-                          key={course}
-                          className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden"
-                        >
+                      {["Data Structures", "Machine Learning", "Web Development", "Database Systems"].map((course) => (
+                        <div key={course} className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
                           <div className="p-5 border-b border-gray-200 dark:border-gray-700">
-                            <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                              {course}
-                            </h3>
+                            <h3 className="text-lg font-medium text-gray-900 dark:text-white">{course}</h3>
                             <p className="text-sm text-gray-500 dark:text-gray-400">
                               {timeframe === "weekly"
                                 ? "This Week's Leaders"
                                 : timeframe === "monthly"
-                                ? "This Month's Leaders"
-                                : "All-Time Leaders"}
+                                  ? "This Month's Leaders"
+                                  : "All-Time Leaders"}
                             </p>
                           </div>
                           <div className="p-5">
                             <div className="space-y-4">
                               {[1, 2, 3].map((rank) => (
-                                <div
-                                  key={rank}
-                                  className="flex items-center justify-between"
-                                >
+                                <div key={rank} className="flex items-center justify-between">
                                   <div className="flex items-center">
                                     <div className="flex-shrink-0 h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 dark:bg-gray-700 dark:text-white">
-                                      {rank === 1
-                                        ? "JS"
-                                        : rank === 2
-                                        ? "JD"
-                                        : "AJ"}
+                                      {rank === 1 ? "JS" : rank === 2 ? "JD" : "AJ"}
                                     </div>
                                     <div className="ml-4">
                                       <div className="text-sm font-medium text-gray-900 dark:text-white">
-                                        {rank === 1
-                                          ? "John Smith"
-                                          : rank === 2
-                                          ? "Jane Doe"
-                                          : "Alex Johnson"}
+                                        {rank === 1 ? "John Smith" : rank === 2 ? "Jane Doe" : "Alex Johnson"}
                                       </div>
                                       <div className="text-sm text-gray-500 dark:text-gray-400">
-                                        {rank === 1 || rank === 2
-                                          ? "Computer Science"
-                                          : "Data Science"}
+                                        {rank === 1 || rank === 2 ? "Computer Science" : "Data Science"}
                                       </div>
                                     </div>
                                   </div>
                                   <div className="text-right">
                                     <div className="text-sm font-medium text-gray-900 dark:text-white">
-                                      {rank === 1
-                                        ? "4,520"
-                                        : rank === 2
-                                        ? "3,850"
-                                        : "3,210"}{" "}
-                                      pts
+                                      {rank === 1 ? "4,520" : rank === 2 ? "3,850" : "3,210"} pts
                                     </div>
-                                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                                      Rank #{rank}
-                                    </div>
+                                    <div className="text-sm text-gray-500 dark:text-gray-400">Rank #{rank}</div>
                                   </div>
                                 </div>
                               ))}
@@ -338,8 +276,8 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ onLogout }) => {
                         timeframe === "weekly"
                           ? "This Week's Quiz Champions"
                           : timeframe === "monthly"
-                          ? "This Month's Quiz Champions"
-                          : "All-Time Quiz Champions"
+                            ? "This Month's Quiz Champions"
+                            : "All-Time Quiz Champions"
                       }
                       entries={[
                         {
@@ -402,9 +340,7 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ onLogout }) => {
 
                     <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
                       <div className="p-5 border-b border-gray-200 dark:border-gray-700">
-                        <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                          Recent Quiz Battles
-                        </h3>
+                        <h3 className="text-lg font-medium text-gray-900 dark:text-white">Recent Quiz Battles</h3>
                       </div>
                       <div className="p-5">
                         <div className="space-y-4">
@@ -434,10 +370,7 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ onLogout }) => {
                               score: "10-8",
                             },
                           ].map((battle, index) => (
-                            <div
-                              key={index}
-                              className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg"
-                            >
+                            <div key={index} className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
                               <div className="flex justify-between items-center">
                                 <div className="flex items-center space-x-2">
                                   <div
@@ -450,27 +383,19 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ onLogout }) => {
                                     {battle.winner === "Jane Doe"
                                       ? "JD"
                                       : battle.winner === "You"
-                                      ? "YO"
-                                      : battle.winner === "John Smith"
-                                      ? "JS"
-                                      : "MB"}
+                                        ? "YO"
+                                        : battle.winner === "John Smith"
+                                          ? "JS"
+                                          : "MB"}
                                   </div>
                                   <div>
-                                    <div className="font-medium text-gray-900 dark:text-white">
-                                      {battle.winner}
-                                    </div>
-                                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                                      Winner
-                                    </div>
+                                    <div className="font-medium text-gray-900 dark:text-white">{battle.winner}</div>
+                                    <div className="text-sm text-gray-500 dark:text-gray-400">Winner</div>
                                   </div>
                                 </div>
                                 <div className="text-center">
-                                  <div className="font-bold text-gray-900 dark:text-white">
-                                    {battle.score}
-                                  </div>
-                                  <div className="text-sm text-gray-500 dark:text-gray-400">
-                                    {battle.topic}
-                                  </div>
+                                  <div className="font-bold text-gray-900 dark:text-white">{battle.score}</div>
+                                  <div className="text-sm text-gray-500 dark:text-gray-400">{battle.topic}</div>
                                 </div>
                                 <div className="flex items-center space-x-2">
                                   <div>
@@ -491,10 +416,10 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ onLogout }) => {
                                     {battle.loser === "Alex Johnson"
                                       ? "AJ"
                                       : battle.loser === "Sarah Williams"
-                                      ? "SW"
-                                      : battle.loser === "You"
-                                      ? "YO"
-                                      : "LT"}
+                                        ? "SW"
+                                        : battle.loser === "You"
+                                          ? "YO"
+                                          : "LT"}
                                   </div>
                                 </div>
                               </div>
@@ -516,7 +441,7 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ onLogout }) => {
         </main>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Leaderboard;
+export default Leaderboard

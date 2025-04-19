@@ -9,7 +9,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { Clock, CheckCircle, XCircle } from "lucide-react"
+import { Clock, CheckCircle, XCircle, Trophy, ArrowUp, ArrowDown, Minus } from "lucide-react"
 
 export default function QuizPage({ params }: { params: { id: string } }) {
   const router = useRouter()
@@ -20,10 +20,13 @@ export default function QuizPage({ params }: { params: { id: string } }) {
   const [quizSubmitted, setQuizSubmitted] = useState(false)
   const [showFeedback, setShowFeedback] = useState(false)
   const [opponents, setOpponents] = useState([
-    { name: "Jane Doe", avatar: "JD", score: 0, answered: 0 },
-    { name: "Alex Johnson", avatar: "AJ", score: 0, answered: 0 },
-    { name: "Sarah Williams", avatar: "SW", score: 0, answered: 0 },
+    { name: "Jane Doe", avatar: "JD", score: 0, answered: 0, rank: 2, change: 0 },
+    { name: "Alex Johnson", avatar: "AJ", score: 0, answered: 0, rank: 3, change: 0 },
+    { name: "Sarah Williams", avatar: "SW", score: 0, answered: 0, rank: 4, change: 0 },
   ])
+  const [userRank, setUserRank] = useState(1)
+  const [userRankChange, setUserRankChange] = useState(0)
+  const [showLiveLeaderboard, setShowLiveLeaderboard] = useState(true)
 
   // Mock quiz data
   const quiz = {
@@ -105,24 +108,56 @@ export default function QuizPage({ params }: { params: { id: string } }) {
     if (quizSubmitted) return
 
     const interval = setInterval(() => {
-      setOpponents((prev) =>
-        prev.map((opponent) => {
+      setOpponents((prev) => {
+        const newOpponents = prev.map((opponent) => {
           // Randomly decide if opponent answers a question
           if (Math.random() > 0.7 && opponent.answered < quiz.questions.length) {
             const correct = Math.random() > 0.3 // 70% chance of correct answer
+            const newScore = correct ? opponent.score + 20 : opponent.score
             return {
               ...opponent,
               answered: opponent.answered + 1,
-              score: correct ? opponent.score + 20 : opponent.score,
+              score: newScore,
             }
           }
           return opponent
-        }),
-      )
+        })
+
+        // Calculate new rankings
+        const allParticipants = [
+          {
+            name: "You",
+            score: answers.filter((answer, index) => answer === quiz.questions[index].correctAnswer).length * 20,
+          },
+          ...newOpponents.map((o) => ({ name: o.name, score: o.score })),
+        ].sort((a, b) => b.score - a.score)
+
+        const yourNewRank = allParticipants.findIndex((p) => p.name === "You") + 1
+        const rankChange = userRank - yourNewRank
+
+        // Update opponent ranks
+        const updatedOpponents = newOpponents.map((opponent, index) => {
+          const newRank = allParticipants.findIndex((p) => p.name === opponent.name) + 1
+          const change = opponent.rank - newRank
+          return {
+            ...opponent,
+            rank: newRank,
+            change: change,
+          }
+        })
+
+        // Update user rank
+        if (yourNewRank !== userRank) {
+          setUserRank(yourNewRank)
+          setUserRankChange(rankChange)
+        }
+
+        return updatedOpponents
+      })
     }, 3000)
 
     return () => clearInterval(interval)
-  }, [quizSubmitted])
+  }, [quizSubmitted, answers, userRank])
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
@@ -165,11 +200,18 @@ export default function QuizPage({ params }: { params: { id: string } }) {
     setShowFeedback(true)
   }
 
+  const toggleLeaderboard = () => {
+    setShowLiveLeaderboard(!showLiveLeaderboard)
+  }
+
   // Calculate progress percentage
   const progressPercentage = ((currentQuestion + 1) / quiz.questions.length) * 100
 
+  // Calculate user score
+  const userScore = answers.filter((answer, index) => answer === quiz.questions[index].correctAnswer).length * 20
+
   return (
-    <div className="container mx-auto max-w-4xl py-8">
+    <div className="container mx-auto max-w-6xl py-8">
       <div className="mb-8 flex flex-col items-start justify-between space-y-4 md:flex-row md:items-center md:space-y-0">
         <div>
           <h1 className="text-3xl font-bold">{quiz.title}</h1>
@@ -186,7 +228,7 @@ export default function QuizPage({ params }: { params: { id: string } }) {
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="grid gap-8 md:grid-cols-3">
         <div className="md:col-span-2">
           <Card className="mb-6">
             <CardHeader className="pb-2">
@@ -272,17 +314,28 @@ export default function QuizPage({ params }: { params: { id: string } }) {
         </div>
 
         <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Live Leaderboard</CardTitle>
+          <Card className="overflow-hidden">
+            <CardHeader className="bg-muted/50 pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle>Live Leaderboard</CardTitle>
+                <Button variant="ghost" size="sm" onClick={toggleLeaderboard}>
+                  {showLiveLeaderboard ? "Hide" : "Show"}
+                </Button>
+              </div>
               <CardDescription>See how you compare to others</CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between rounded-lg bg-primary/10 p-3">
+            <CardContent
+              className={`p-0 transition-all duration-300 ${showLiveLeaderboard ? "max-h-[500px]" : "max-h-0"}`}
+            >
+              <div className="p-4 space-y-4">
+                <div
+                  className={`flex items-center justify-between rounded-lg p-3 ${userRank === 1 ? "bg-amber-100 dark:bg-amber-900/20" : userRank <= 3 ? "bg-primary/10" : ""}`}
+                >
                   <div className="flex items-center space-x-2">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                      2
+                    <div
+                      className={`flex h-8 w-8 items-center justify-center rounded-full ${userRank === 1 ? "bg-amber-500 text-white" : "bg-primary text-primary-foreground"}`}
+                    >
+                      {userRank}
                     </div>
                     <Avatar>
                       <AvatarImage src="/placeholder.svg?height=40&width=40&text=You" />
@@ -293,16 +346,41 @@ export default function QuizPage({ params }: { params: { id: string } }) {
                       <p className="text-xs">{answers.filter(Boolean).length} answered</p>
                     </div>
                   </div>
-                  <div className="text-right font-semibold">
-                    {answers.filter((answer, index) => answer === quiz.questions[index].correctAnswer).length * 20} pts
+                  <div className="text-right">
+                    <div className="font-semibold">{userScore} pts</div>
+                    {userRankChange !== 0 && (
+                      <div className="flex items-center text-xs">
+                        {userRankChange > 0 ? (
+                          <>
+                            <ArrowUp className="h-3 w-3 text-green-500 mr-1" />
+                            <span className="text-green-500">+{userRankChange}</span>
+                          </>
+                        ) : userRankChange < 0 ? (
+                          <>
+                            <ArrowDown className="h-3 w-3 text-red-500 mr-1" />
+                            <span className="text-red-500">{userRankChange}</span>
+                          </>
+                        ) : (
+                          <>
+                            <Minus className="h-3 w-3 text-muted-foreground mr-1" />
+                            <span className="text-muted-foreground">0</span>
+                          </>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
 
                 {opponents.map((opponent, index) => (
-                  <div key={index} className="flex items-center justify-between rounded-lg p-3">
+                  <div
+                    key={index}
+                    className={`flex items-center justify-between rounded-lg p-3 ${opponent.rank === 1 ? "bg-amber-100 dark:bg-amber-900/20" : opponent.rank <= 3 ? "bg-muted/50" : ""}`}
+                  >
                     <div className="flex items-center space-x-2">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
-                        {index + 1 === 0 ? 1 : index + 1 === 1 ? 3 : 4}
+                      <div
+                        className={`flex h-8 w-8 items-center justify-center rounded-full ${opponent.rank === 1 ? "bg-amber-500 text-white" : "bg-muted"}`}
+                      >
+                        {opponent.rank}
                       </div>
                       <Avatar>
                         <AvatarImage src={`/placeholder.svg?height=40&width=40&text=${opponent.avatar}`} />
@@ -313,7 +391,29 @@ export default function QuizPage({ params }: { params: { id: string } }) {
                         <p className="text-xs">{opponent.answered} answered</p>
                       </div>
                     </div>
-                    <div className="text-right font-semibold">{opponent.score} pts</div>
+                    <div className="text-right">
+                      <div className="font-semibold">{opponent.score} pts</div>
+                      {opponent.change !== 0 && (
+                        <div className="flex items-center justify-end text-xs">
+                          {opponent.change > 0 ? (
+                            <>
+                              <ArrowUp className="h-3 w-3 text-green-500 mr-1" />
+                              <span className="text-green-500">+{opponent.change}</span>
+                            </>
+                          ) : opponent.change < 0 ? (
+                            <>
+                              <ArrowDown className="h-3 w-3 text-red-500 mr-1" />
+                              <span className="text-red-500">{opponent.change}</span>
+                            </>
+                          ) : (
+                            <>
+                              <Minus className="h-3 w-3 text-muted-foreground mr-1" />
+                              <span className="text-muted-foreground">0</span>
+                            </>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -339,6 +439,65 @@ export default function QuizPage({ params }: { params: { id: string } }) {
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Time Left:</span>
                   <span>{formatTime(timeLeft)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Your Score:</span>
+                  <span className="font-semibold">{userScore} pts</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Your Rank:</span>
+                  <span className="font-semibold">
+                    {userRank} of {opponents.length + 1}
+                  </span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Trophy className="mr-2 h-5 w-5 text-primary" />
+                Quiz Rewards
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <div className="mr-3 flex h-8 w-8 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/20">
+                      <Trophy className="h-4 w-4 text-amber-600" />
+                    </div>
+                    <span>1st Place</span>
+                  </div>
+                  <Badge variant="outline">500 XP</Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <div className="mr-3 flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">
+                      <Trophy className="h-4 w-4 text-gray-500" />
+                    </div>
+                    <span>2nd Place</span>
+                  </div>
+                  <Badge variant="outline">300 XP</Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <div className="mr-3 flex h-8 w-8 items-center justify-center rounded-full bg-amber-50 dark:bg-amber-900/10">
+                      <Trophy className="h-4 w-4 text-amber-700" />
+                    </div>
+                    <span>3rd Place</span>
+                  </div>
+                  <Badge variant="outline">200 XP</Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <div className="mr-3 flex h-8 w-8 items-center justify-center rounded-full bg-muted">
+                      <CheckCircle className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                    <span>Completion</span>
+                  </div>
+                  <Badge variant="outline">100 XP</Badge>
                 </div>
               </div>
             </CardContent>

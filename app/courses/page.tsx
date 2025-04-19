@@ -9,7 +9,7 @@ import { ChevronRight, Clock, Users } from "lucide-react"
 
 export default function CoursesPage() {
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 p-6">
       <div className="flex flex-col justify-between space-y-4 md:flex-row md:items-center md:space-y-0">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Courses</h2>
@@ -127,7 +127,7 @@ export default function CoursesPage() {
                   </div>
                 </CardContent>
                 <CardFooter className="p-4 pt-0">
-                  <Link href={`/courses/${course.title.toLowerCase().replace(/\s+/g, "-")}`} className="w-full">
+                  <Link href={`/courses/${i + 1}`} className="w-full">
                     <Button variant="outline" className="w-full justify-between">
                       Continue Learning
                       <ChevronRight className="h-4 w-4" />
