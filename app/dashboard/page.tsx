@@ -9,9 +9,13 @@ import { Progress } from "@/components/ui/progress"
 import { BookOpen, Calendar, Trophy, Clock, Bell } from "lucide-react"
 import { DashboardCarousel } from "@/components/dashboard/dashboard-carousel"
 import { CourseCard } from "@/components/dashboard/course-card"
+import { ProgressChart } from "@/components/dashboard/progress-chart"
+import { getAllCourses } from "@/lib/course-data"
+import Link from "next/link"
 
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState("overview")
+  const courses = getAllCourses()
 
   return (
     <div className="space-y-8">
@@ -50,7 +54,7 @@ export default function DashboardPage() {
                 <BookOpen className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">5</div>
+                <div className="text-2xl font-bold">{courses.length}</div>
                 <p className="text-xs text-muted-foreground">+1 from last semester</p>
               </CardContent>
             </Card>
@@ -89,24 +93,11 @@ export default function DashboardPage() {
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
             <Card className="col-span-4">
               <CardHeader>
-                <CardTitle>Recent Activity</CardTitle>
+                <CardTitle>Progress Overview</CardTitle>
+                <CardDescription>Your progress across all courses</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="flex items-center">
-                      <div className="mr-4 space-y-1">
-                        <p className="text-sm font-medium leading-none">
-                          Completed Quiz: Introduction to Data Structures
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {i === 1 ? "Today" : i === 2 ? "Yesterday" : "3 days ago"}
-                        </p>
-                      </div>
-                      <div className="ml-auto font-medium">{90 - i * 5}%</div>
-                    </div>
-                  ))}
-                </div>
+                <ProgressChart />
               </CardContent>
             </Card>
             <Card className="col-span-3">
@@ -117,20 +108,25 @@ export default function DashboardPage() {
               <CardContent>
                 <div className="space-y-4">
                   {[
-                    { title: "Database Assignment", date: "Tomorrow, 11:59 PM", urgent: true },
-                    { title: "Algorithm Quiz", date: "May 15, 2:00 PM", urgent: false },
-                    { title: "Group Project Submission", date: "May 20, 5:00 PM", urgent: false },
+                    { title: "Database Assignment", date: "Tomorrow, 11:59 PM", urgent: true, courseId: "cs301" },
+                    { title: "Algorithm Quiz", date: "May 15, 2:00 PM", urgent: false, courseId: "cs201" },
+                    { title: "Group Project Submission", date: "May 20, 5:00 PM", urgent: false, courseId: "cs101" },
                   ].map((item, i) => (
                     <div key={i} className="flex items-center">
                       <div className="mr-4 space-y-1">
                         <p className="text-sm font-medium leading-none">{item.title}</p>
                         <p className="text-sm text-muted-foreground">{item.date}</p>
                       </div>
-                      {item.urgent && (
-                        <Badge variant="destructive" className="ml-auto">
-                          Urgent
-                        </Badge>
-                      )}
+                      <div className="ml-auto flex items-center space-x-2">
+                        {item.urgent && (
+                          <Badge variant="destructive" className="mr-2">
+                            Urgent
+                          </Badge>
+                        )}
+                        <Button asChild size="sm" variant="outline">
+                          <Link href={`/courses/${item.courseId}`}>View</Link>
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -141,41 +137,16 @@ export default function DashboardPage() {
 
         <TabsContent value="courses" className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <CourseCard
-              title="Introduction to Computer Science"
-              instructor="Dr. Alan Turing"
-              progress={75}
-              image="/placeholder.svg?height=100&width=200&text=CS101"
-              href="/courses/cs101"
-            />
-            <CourseCard
-              title="Data Structures and Algorithms"
-              instructor="Prof. Ada Lovelace"
-              progress={45}
-              image="/placeholder.svg?height=100&width=200&text=CS201"
-              href="/courses/cs201"
-            />
-            <CourseCard
-              title="Database Systems"
-              instructor="Dr. Edgar Codd"
-              progress={90}
-              image="/placeholder.svg?height=100&width=200&text=CS301"
-              href="/courses/cs301"
-            />
-            <CourseCard
-              title="Web Development"
-              instructor="Prof. Tim Berners-Lee"
-              progress={30}
-              image="/placeholder.svg?height=100&width=200&text=CS401"
-              href="/courses/cs401"
-            />
-            <CourseCard
-              title="Artificial Intelligence"
-              instructor="Dr. Geoffrey Hinton"
-              progress={15}
-              image="/placeholder.svg?height=100&width=200&text=CS501"
-              href="/courses/cs501"
-            />
+            {courses.map((course) => (
+              <CourseCard
+                key={course.id}
+                title={course.title}
+                instructor={course.instructor}
+                progress={course.progress}
+                image={course.image}
+                href={`/courses/${course.id}`}
+              />
+            ))}
           </div>
         </TabsContent>
 
@@ -189,6 +160,7 @@ export default function DashboardPage() {
                 duration: "45 minutes",
                 questions: 20,
                 points: 100,
+                courseId: "cs301",
               },
               {
                 title: "Sorting Algorithms",
@@ -197,6 +169,7 @@ export default function DashboardPage() {
                 duration: "60 minutes",
                 questions: 25,
                 points: 125,
+                courseId: "cs201",
               },
               {
                 title: "HTML and CSS Basics",
@@ -205,6 +178,7 @@ export default function DashboardPage() {
                 duration: "30 minutes",
                 questions: 15,
                 points: 75,
+                courseId: "cs401",
               },
             ].map((quiz, i) => (
               <Card key={i}>
@@ -223,7 +197,9 @@ export default function DashboardPage() {
                         <span>Questions: {quiz.questions}</span>
                         <span>Points: {quiz.points}</span>
                       </div>
-                      <Button className="w-full">Prepare for Quiz</Button>
+                      <Button asChild className="w-full">
+                        <Link href={`/courses/${quiz.courseId}`}>Prepare for Quiz</Link>
+                      </Button>
                     </div>
                   </div>
                 </CardContent>
@@ -240,8 +216,8 @@ export default function DashboardPage() {
                 <CardDescription>Your academic performance across all courses</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="h-[300px] flex items-center justify-center">
-                  <p className="text-muted-foreground">Performance chart will be displayed here</p>
+                <div className="h-[300px]">
+                  <ProgressChart showLegend={true} />
                 </div>
               </CardContent>
             </Card>
@@ -252,19 +228,13 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {[
-                    { course: "Computer Science", score: 92 },
-                    { course: "Data Structures", score: 78 },
-                    { course: "Database Systems", score: 85 },
-                    { course: "Web Development", score: 65 },
-                    { course: "Artificial Intelligence", score: 72 },
-                  ].map((item, i) => (
-                    <div key={i} className="space-y-2">
+                  {courses.map((course) => (
+                    <div key={course.id} className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium">{item.course}</span>
-                        <span className="text-sm font-medium">{item.score}%</span>
+                        <span className="text-sm font-medium">{course.title}</span>
+                        <span className="text-sm font-medium">{course.progress}%</span>
                       </div>
-                      <Progress value={item.score} className="h-2" />
+                      <Progress value={course.progress} className="h-2" />
                     </div>
                   ))}
                 </div>

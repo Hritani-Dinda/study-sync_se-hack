@@ -9,8 +9,8 @@ interface LeaderboardEntryProps {
   badges?: string[]
   timeTaken?: string
   isCurrentUser?: boolean
-  highlight?:boolean
-  additionalInfo?:string
+  highlight?: boolean
+  additionalInfo?: string
 }
 
 const LeaderboardCard: React.FC<{
