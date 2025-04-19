@@ -4,11 +4,133 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = env("DATABASE_URL")
+  url      = "file:./dev.db"
 }
 
 model User {
-  id    Int     @id @default(autoincrement())
-  email String  @unique
-  name  String?
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(STUDENT)
+  createdAt DateTime @default(now())
+
+  teacher         Teacher?
+  courses         Course[]
+  enrollments     Enrollment[]
+  videos          Video[]
+  submissions     Submission[]
+  questionAnswers QuestionSubmission[]
+}
+
+model Teacher {
+  id             Int     @id
+  department     String?
+  officeLocation String?
+  user           User    @relation(fields: [id], references: [id])
+}
+
+model Course {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  teacherId   Int
+  createdAt   DateTime @default(now())
+
+  teacher     User         @relation(fields: [teacherId], references: [id])
+  enrollments Enrollment[]
+  videos      Video[]
+  assignments Assignment[]
+  questions   Question[]
+}
+
+model Enrollment {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  courseId   Int
+  enrolledAt DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id])
+  course Course @relation(fields: [courseId], references: [id])
+
+  @@unique([userId, courseId])
+}
+
+model Video {
+  id         Int      @id @default(autoincrement())
+  courseId   Int
+  title      String?
+  url        String
+  uploadedBy Int
+  uploadedAt DateTime @default(now())
+
+  course   Course @relation(fields: [courseId], references: [id])
+  uploader User   @relation(fields: [uploadedBy], references: [id])
+}
+
+model Assignment {
+  id          Int       @id @default(autoincrement())
+  courseId    Int
+  title       String
+  description String?
+  dueDate     DateTime?
+  createdAt   DateTime  @default(now())
+
+  course      Course       @relation(fields: [courseId], references: [id])
+  submissions Submission[]
+}
+
+model Submission {
+  id             Int       @id @default(autoincrement())
+  assignmentId   Int
+  studentId      Int
+  submissionFile String?
+  submittedAt    DateTime  @default(now())
+  grade          Float?
+  feedback       String?
+
+  assignment Assignment @relation(fields: [assignmentId], references: [id])
+  student    User       @relation(fields: [studentId], references: [id])
+
+  @@unique([assignmentId, studentId])
+}
+
+model Question {
+  id            Int      @id @default(autoincrement())
+  courseId      Int
+  questionText  String
+  optionA       String?
+  optionB       String?
+  optionC       String?
+  optionD       String?
+  correctOption Option?
+  createdAt     DateTime @default(now())
+
+  course     Course              @relation(fields: [courseId], references: [id])
+  submissions QuestionSubmission[]
+}
+
+model QuestionSubmission {
+  id             Int      @id @default(autoincrement())
+  questionId     Int
+  studentId      Int
+  selectedOption Option?
+  isCorrect      Boolean?
+  answeredAt     DateTime @default(now())
+
+  question Question @relation(fields: [questionId], references: [id])
+  student  User     @relation(fields: [studentId], references: [id])
+}
+
+enum Role {
+  STUDENT
+  TEACHER
+  ADMIN
+}
+
+enum Option {
+  A
+  B
+  C
+  D
 }
