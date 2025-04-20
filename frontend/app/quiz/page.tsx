@@ -5,13 +5,104 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Calendar, Clock, Trophy, Users, BookOpen } from "lucide-react"
+import { Calendar, Clock, Trophy, Users, BookOpen, Search, Filter, CheckCircle, ArrowRight, Plus } from "lucide-react"
+import { useState, useEffect } from "react"
+import { Input } from "@/components/ui/input"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Separator } from "@/components/ui/separator"
+import { useToast } from "@/components/ui/use-toast"
+import { useRouter } from "next/navigation"
+import { getPublishedQuizzes, QuizItem } from "@/lib/quiz-data"
 
 export default function QuizPage() {
+  const [quizData, setQuizData] = useState<Record<string, QuizItem>>({})
+  const [searchTerm, setSearchTerm] = useState("")
+  const [filteredQuizzes, setFilteredQuizzes] = useState<[string, QuizItem][]>([])
+  const [activeTab, setActiveTab] = useState("all")
+  const [completedQuizzes, setCompletedQuizzes] = useState<string[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const { toast } = useToast()
+  
+  // Load all published quizzes
+  useEffect(() => {
+    try {
+      setIsLoading(true)
+      // Get only published quizzes for students
+      const publishedQuizzes = getPublishedQuizzes();
+      setQuizData(publishedQuizzes);
+    } catch (err) {
+      console.error('Error loading quizzes:', err);
+      toast({
+        title: "Error",
+        description: "Failed to load quizzes. Please refresh the page.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+    
+    // Check for updates every 30 seconds
+    const interval = setInterval(() => {
+      const publishedQuizzes = getPublishedQuizzes();
+      setQuizData(publishedQuizzes);
+    }, 30000);
+    
+    return () => clearInterval(interval);
+  }, [toast]);
+  
+  // Load the list of completed quizzes
+  useEffect(() => {
+    try {
+      const storedCompletedQuizzes = sessionStorage.getItem('completedQuizzes')
+      if (storedCompletedQuizzes) {
+        setCompletedQuizzes(JSON.parse(storedCompletedQuizzes))
+      }
+    } catch (err) {
+      console.error('Error loading completed quizzes:', err)
+    }
+  }, [])
+  
+  // Filter quizzes based on search term and active tab
+  useEffect(() => {
+    if (isLoading) return
+    
+    if (searchTerm.trim() === "") {
+      if (activeTab === "all") {
+        setFilteredQuizzes(Object.entries(quizData))
+      } else if (activeTab === "completed") {
+        setFilteredQuizzes(Object.entries(quizData).filter(([id]) => completedQuizzes.includes(id)))
+      } else {
+        setFilteredQuizzes(Object.entries(quizData).filter(([id]) => !completedQuizzes.includes(id)))
+      }
+    } else {
+      const term = searchTerm.toLowerCase()
+      let filtered = Object.entries(quizData).filter(([_, quiz]) => 
+        quiz.title.toLowerCase().includes(term) || 
+        quiz.course.toLowerCase().includes(term)
+      )
+      
+      if (activeTab === "completed") {
+        filtered = filtered.filter(([id]) => completedQuizzes.includes(id))
+      } else if (activeTab === "pending") {
+        filtered = filtered.filter(([id]) => !completedQuizzes.includes(id))
+      }
+      
+      setFilteredQuizzes(filtered)
+    }
+  }, [searchTerm, activeTab, completedQuizzes, quizData, isLoading])
+  
+  const quizCount = Object.keys(quizData).length
+  const completedCount = completedQuizzes.length
+  const pendingCount = quizCount - completedCount
+  
+  const handleTabChange = (value: string) => {
+    setActiveTab(value)
+  }
+
   return (
     <div className="container py-8">
       <div className="space-y-8">
-        {/* Fixed the header layout */}
+        {/* Header section */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <h2 className="text-3xl font-bold tracking-tight">Quizzes</h2>
@@ -24,227 +115,174 @@ export default function QuizPage() {
           </div>
         </div>
 
-        <Tabs defaultValue="upcoming" className="space-y-8">
-          <TabsList>
-            <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
-            <TabsTrigger value="battles">Quiz Battles</TabsTrigger>
-            <TabsTrigger value="completed">Completed</TabsTrigger>
+        <div className="flex items-center space-x-2 justify-end">
+          <Button variant="outline" size="icon">
+            <Filter className="h-4 w-4" />
+          </Button>
+          <div className="relative">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="search"
+              placeholder="Search quizzes..."
+              className="pl-8 w-[250px]"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+        </div>
+
+        <Tabs defaultValue="all" className="w-full" onValueChange={handleTabChange}>
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="all">All Quizzes ({quizCount})</TabsTrigger>
+            <TabsTrigger value="completed">Completed ({completedCount})</TabsTrigger>
+            <TabsTrigger value="pending">Pending ({pendingCount})</TabsTrigger>
           </TabsList>
 
-          {/* Rest of your code remains the same */}
-          <TabsContent value="upcoming" className="space-y-4">
-            <div className="grid gap-4">
-              {[
-                {
-                  title: "Database Normalization",
-                  course: "Database Systems",
-                  date: "May 12, 2:00 PM",
-                  duration: "45 minutes",
-                  questions: 20,
-                  points: 100,
-                  status: "Open",
-                },
-                {
-                  title: "Sorting Algorithms",
-                  course: "Data Structures and Algorithms",
-                  date: "May 15, 10:00 AM",
-                  duration: "60 minutes",
-                  questions: 25,
-                  points: 125,
-                  status: "Open",
-                },
-                {
-                  title: "HTML and CSS Basics",
-                  course: "Web Development",
-                  date: "May 18, 3:30 PM",
-                  duration: "30 minutes",
-                  questions: 15,
-                  points: 75,
-                  status: "Not Yet Open",
-                },
-              ].map((quiz, i) => (
-                <Card key={i}>
-                  <CardContent className="p-6">
-                    <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
-                      <div className="space-y-1">
-                        <div className="flex items-center space-x-2">
-                          <h3 className="font-semibold">{quiz.title}</h3>
-                          <Badge variant={quiz.status === "Open" ? "default" : "outline"}>{quiz.status}</Badge>
+          <TabsContent value="all">
+            {isLoading ? (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground">Loading quizzes...</p>
+              </div>
+            ) : filteredQuizzes.length === 0 ? (
+              <div className="text-center py-12">
+                <h3 className="text-lg font-medium">No quizzes found</h3>
+                <p className="text-muted-foreground mt-2">Check back later for new quizzes.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+                {filteredQuizzes.map(([id, quiz]) => (
+                  <Card key={id} className="overflow-hidden">
+                    <CardHeader className="pb-3">
+                      <CardTitle>{quiz.title}</CardTitle>
+                      <CardDescription>{quiz.course}</CardDescription>
+                    </CardHeader>
+                    <CardContent className="pb-3">
+                      <div className="flex items-center justify-between text-sm text-muted-foreground">
+                        <div className="flex items-center">
+                          <Clock className="mr-1 h-4 w-4" />
+                          <span>{quiz.timeLimit} mins</span>
                         </div>
-                        <p className="text-sm text-muted-foreground">
-                          <BookOpen className="mr-1 inline-block h-4 w-4" />
-                          {quiz.course}
-                        </p>
-                        <div className="flex items-center text-sm text-muted-foreground">
-                          <Calendar className="mr-1 inline-block h-4 w-4" />
-                          {quiz.date} •
-                          <Clock className="mx-1 inline-block h-4 w-4" />
-                          {quiz.duration}
+                        <div className="flex items-center">
+                          <CheckCircle className="mr-1 h-4 w-4" />
+                          <span>{quiz.questions.length} Questions</span>
                         </div>
                       </div>
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between text-sm">
-                          <span>Questions: {quiz.questions}</span>
-                          <span>Points: {quiz.points}</span>
+                    </CardContent>
+                    <CardFooter className="pt-3 border-t flex justify-between items-center">
+                      {completedQuizzes.includes(id) ? (
+                        <>
+                          <Badge variant="outline" className="mr-2">Completed</Badge>
+                          <div className="flex space-x-2">
+                            <Button variant="outline" size="sm" asChild>
+                              <Link href={`/quiz/${id}`}>Retake</Link>
+                            </Button>
+                            <Button size="sm" asChild>
+                              <Link href={`/quiz/results/${id}`}>View Results</Link>
+                            </Button>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <Badge variant="outline" className="mr-2">Pending</Badge>
+                          <Button size="sm" asChild>
+                            <Link href={`/quiz/${id}`}>Start Quiz <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                          </Button>
+                        </>
+                      )}
+                    </CardFooter>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+          
+          <TabsContent value="completed">
+            {isLoading ? (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground">Loading quizzes...</p>
+              </div>
+            ) : completedCount === 0 ? (
+              <div className="text-center py-12">
+                <h3 className="text-lg font-medium">No completed quizzes yet</h3>
+                <p className="text-muted-foreground mt-2">Start taking quizzes to see your results here.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+                {filteredQuizzes.map(([id, quiz]) => (
+                  <Card key={id} className="overflow-hidden">
+                    <CardHeader className="pb-3">
+                      <CardTitle>{quiz.title}</CardTitle>
+                      <CardDescription>{quiz.course}</CardDescription>
+                    </CardHeader>
+                    <CardContent className="pb-3">
+                      <div className="flex items-center justify-between text-sm text-muted-foreground">
+                        <div className="flex items-center">
+                          <Clock className="mr-1 h-4 w-4" />
+                          <span>{quiz.timeLimit} mins</span>
                         </div>
-                        <Button className="w-full" disabled={quiz.status !== "Open"}>
-                          {quiz.status === "Open" ? "Start Quiz" : "Not Available Yet"}
+                        <div className="flex items-center">
+                          <CheckCircle className="mr-1 h-4 w-4" />
+                          <span>{quiz.questions.length} Questions</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                    <CardFooter className="pt-3 border-t flex justify-between items-center">
+                      <Badge variant="outline" className="mr-2">Completed</Badge>
+                      <div className="flex space-x-2">
+                        <Button variant="outline" size="sm" asChild>
+                          <Link href={`/quiz/${id}`}>Retake</Link>
+                        </Button>
+                        <Button size="sm" asChild>
+                          <Link href={`/quiz/results/${id}`}>View Results</Link>
                         </Button>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                    </CardFooter>
+                  </Card>
+                ))}
+              </div>
+            )}
           </TabsContent>
-
-          <TabsContent value="battles" className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {[
-                {
-                  title: "Data Structures Challenge",
-                  participants: 24,
-                  startTime: "Today, 4:00 PM",
-                  duration: "30 minutes",
-                  status: "Enrolling",
-                  prize: "500 XP + Badge",
-                },
-                {
-                  title: "Algorithm Showdown",
-                  participants: 16,
-                  startTime: "Tomorrow, 2:00 PM",
-                  duration: "45 minutes",
-                  status: "Enrolling",
-                  prize: "750 XP + Badge",
-                },
-                {
-                  title: "Database Design Battle",
-                  participants: 12,
-                  startTime: "May 14, 3:00 PM",
-                  duration: "60 minutes",
-                  status: "Enrolling",
-                  prize: "1000 XP + Badge",
-                },
-                {
-                  title: "Web Dev Warrior",
-                  participants: 32,
-                  startTime: "May 16, 5:00 PM",
-                  duration: "40 minutes",
-                  status: "Coming Soon",
-                  prize: "600 XP + Badge",
-                },
-              ].map((battle, i) => (
-                <Card key={i}>
-                  <CardHeader className="pb-2">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-lg">{battle.title}</CardTitle>
-                      <Badge variant={battle.status === "Enrolling" ? "default" : "outline"}>{battle.status}</Badge>
-                    </div>
-                    <CardDescription>
-                      <Trophy className="mr-1 inline-block h-4 w-4" />
-                      Prize: {battle.prize}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="pb-2">
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">
-                          <Users className="mr-1 inline-block h-4 w-4" />
-                          Participants:
-                        </span>
-                        <span>{battle.participants}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">
-                          <Calendar className="mr-1 inline-block h-4 w-4" />
-                          Start Time:
-                        </span>
-                        <span>{battle.startTime}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">
-                          <Clock className="mr-1 inline-block h-4 w-4" />
-                          Duration:
-                        </span>
-                        <span>{battle.duration}</span>
-                      </div>
-                    </div>
-                  </CardContent>
-                  <CardFooter>
-                    <Button
-                      className="w-full"
-                      variant={battle.status === "Enrolling" ? "default" : "outline"}
-                      disabled={battle.status !== "Enrolling"}
-                    >
-                      {battle.status === "Enrolling" ? "Join Battle" : "Coming Soon"}
-                    </Button>
-                  </CardFooter>
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="completed" className="space-y-4">
-            <div className="grid gap-4">
-              {[
-                {
-                  title: "Introduction to Programming",
-                  course: "Computer Science 101",
-                  date: "April 28, 2023",
-                  score: "85/100",
-                  rank: "12/45",
-                  status: "Passed",
-                },
-                {
-                  title: "Data Types and Variables",
-                  course: "Computer Science 101",
-                  date: "April 15, 2023",
-                  score: "92/100",
-                  rank: "5/45",
-                  status: "Passed",
-                },
-                {
-                  title: "Basic SQL Commands",
-                  course: "Database Systems",
-                  date: "April 10, 2023",
-                  score: "78/100",
-                  rank: "18/40",
-                  status: "Passed",
-                },
-              ].map((quiz, i) => (
-                <Card key={i}>
-                  <CardContent className="p-6">
-                    <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
-                      <div className="space-y-1">
-                        <div className="flex items-center space-x-2">
-                          <h3 className="font-semibold">{quiz.title}</h3>
-                          <Badge variant="outline" className="bg-green-500/10 text-green-500">
-                            {quiz.status}
-                          </Badge>
+          
+          <TabsContent value="pending">
+            {isLoading ? (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground">Loading quizzes...</p>
+              </div>
+            ) : pendingCount === 0 ? (
+              <div className="text-center py-12">
+                <h3 className="text-lg font-medium">No pending quizzes</h3>
+                <p className="text-muted-foreground mt-2">You've completed all available quizzes!</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+                {filteredQuizzes.map(([id, quiz]) => (
+                  <Card key={id} className="overflow-hidden">
+                    <CardHeader className="pb-3">
+                      <CardTitle>{quiz.title}</CardTitle>
+                      <CardDescription>{quiz.course}</CardDescription>
+                    </CardHeader>
+                    <CardContent className="pb-3">
+                      <div className="flex items-center justify-between text-sm text-muted-foreground">
+                        <div className="flex items-center">
+                          <Clock className="mr-1 h-4 w-4" />
+                          <span>{quiz.timeLimit} mins</span>
                         </div>
-                        <p className="text-sm text-muted-foreground">
-                          <BookOpen className="mr-1 inline-block h-4 w-4" />
-                          {quiz.course}
-                        </p>
-                        <div className="text-sm text-muted-foreground">
-                          <Calendar className="mr-1 inline-block h-4 w-4" />
-                          Completed on {quiz.date}
+                        <div className="flex items-center">
+                          <CheckCircle className="mr-1 h-4 w-4" />
+                          <span>{quiz.questions.length} Questions</span>
                         </div>
                       </div>
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between text-sm">
-                          <span>Score: {quiz.score}</span>
-                          <span>Rank: {quiz.rank}</span>
-                        </div>
-                        <Button variant="outline" className="w-full">
-                          View Results
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                    </CardContent>
+                    <CardFooter className="pt-3 border-t flex justify-between items-center">
+                      <Badge variant="outline" className="mr-2">Pending</Badge>
+                      <Button size="sm" asChild>
+                        <Link href={`/quiz/${id}`}>Start Quiz <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                ))}
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </div>

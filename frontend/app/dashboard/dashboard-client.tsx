@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { BookOpen, Calendar, Trophy, Clock, Bell } from "lucide-react";
+import { BookOpen, Calendar, Trophy, Clock, Bell, Users } from "lucide-react";
 import { DashboardCarousel } from "@/components/dashboard/dashboard-carousel";
 import { CourseCard } from "@/components/dashboard/course-card";
 import { ProgressChart } from "@/components/dashboard/progress-chart";
@@ -29,6 +29,7 @@ import {
   DialogFooter,
   DialogClose,
 } from "@/components/ui/dialog";
+import { AttendanceDashboard } from "@/components/dashboard/attendance-dashboard";
 
 type DashboardClientProps = {
   firstName: string;
@@ -183,11 +184,11 @@ export default function DashboardClient({
         className="space-y-8"
         onValueChange={setActiveTab}
       >
-        <TabsList>
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="courses">My Courses</TabsTrigger>
-          <TabsTrigger value="quizzes">Upcoming Quizzes</TabsTrigger>
+          <TabsTrigger value="courses">Courses</TabsTrigger>
           <TabsTrigger value="performance">Performance</TabsTrigger>
+          <TabsTrigger value="attendance">Attendance</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-8">
@@ -408,6 +409,10 @@ export default function DashboardClient({
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+
+        <TabsContent value="attendance" className="space-y-6">
+          <AttendanceDashboard />
         </TabsContent>
       </Tabs>
     </div>
