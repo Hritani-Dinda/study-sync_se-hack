@@ -6,7 +6,7 @@ import { getAllCourses } from "@/lib/course-data"
 export default async function TeacherDashboardPage() {
   // Check the current user
   const user = await currentUser()
-
+  
   if (!user) {
     redirect("/login") // Redirect to login page if no user
   }

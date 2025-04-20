@@ -13,10 +13,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ArrowLeft, Clock, Plus, Trash2, Save } from "lucide-react"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group-fix"
+import { saveQuiz, publishQuiz } from "@/lib/quiz-data"
+import { useToast } from "@/components/ui/use-toast"
 
 export default function CreateQuizPage() {
   const router = useRouter()
+  const { toast } = useToast()
   const [activeTab, setActiveTab] = useState("details")
   const [quizTitle, setQuizTitle] = useState("")
   const [quizDescription, setQuizDescription] = useState("")
@@ -101,20 +104,71 @@ export default function CreateQuizPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    // Here you would typically save the quiz to your backend
-    console.log({
+    
+    // Validate the quiz has at least one question
+    if (questions.length === 0) {
+      toast({
+        title: "Error",
+        description: "Please add at least one question to your quiz",
+        variant: "destructive"
+      })
+      return
+    }
+    
+    // Transform questions to match our expected format
+    const formattedQuestions = questions.map(q => ({
+      id: q.id,
+      question: q.text,
+      options: q.type === "multiple-choice" 
+        ? q.options.map(o => o.text)
+        : q.type === "true-false"
+        ? ["True", "False"]
+        : [q.options[0]?.text || ""], // For short-answer
+      correct: q.type === "multiple-choice"
+        ? q.options.findIndex(o => o.isCorrect)
+        : q.type === "true-false"
+        ? q.options.findIndex(o => o.isCorrect)
+        : 0 // For short-answer, the first (and only) option is correct
+    }))
+    
+    // Create the quiz object to save
+    const quizToSave = {
+      id: "", // Will be generated from title if empty
       title: quizTitle,
       description: quizDescription,
-      timeLimit,
       course: selectedCourse,
-      dueDate,
-      isPublished,
-      questions,
-    })
-
-    // Show success message and redirect
-    alert("Quiz created successfully!")
-    router.push("/teacher/dashboard")
+      timeLimit: timeLimit,
+      dueDate: dueDate,
+      createdBy: "current-user-id", // This would normally come from auth
+      createdAt: new Date().toISOString(),
+      isPublished: isPublished,
+      questions: formattedQuestions
+    }
+    
+    // Save the quiz
+    try {
+      const savedQuiz = saveQuiz(quizToSave)
+      
+      // If set to publish immediately, publish it
+      if (isPublished) {
+        publishQuiz(savedQuiz.id)
+      }
+      
+      toast({
+        title: "Success",
+        description: `Quiz "${quizTitle}" ${isPublished ? 'created and published' : 'saved as draft'}`,
+      })
+      
+      // Redirect to dashboard
+      router.push("/teacher/dashboard")
+    } catch (error) {
+      console.error("Error saving quiz:", error)
+      toast({
+        title: "Error",
+        description: "Failed to save quiz. Please try again.",
+        variant: "destructive"
+      })
+    }
   }
 
   return (
@@ -317,11 +371,11 @@ export default function CreateQuizPage() {
                     <div className="space-y-4">
                       <Label>Answer Options</Label>
                       <RadioGroup
-                        value={question.options.find((o) => o.isCorrect)?.id.toString() || ""}
-                        onValueChange={(value) => setCorrectOption(question.id, Number.parseInt(value))}
+                        value={questions.find(q => q.id === question.id)?.options.findIndex(o => o.isCorrect)?.toString() || ""}
+                        onValueChange={(value) => setCorrectOption(question.id, parseInt(value))}
                       >
                         {question.options.map((option) => (
-                          <div key={option.id} className="flex items-center space-x-2">
+                          <div key={option.id} className="flex items-center space-x-2 mb-2">
                             <RadioGroupItem value={option.id.toString()} id={`q${question.id}-option-${option.id}`} />
                             <Input
                               placeholder={`Option ${option.id}`}
@@ -339,10 +393,10 @@ export default function CreateQuizPage() {
                     <div className="space-y-4">
                       <Label>Correct Answer</Label>
                       <RadioGroup
-                        value={question.options.find((o) => o.isCorrect)?.id.toString() || ""}
-                        onValueChange={(value) => setCorrectOption(question.id, Number.parseInt(value))}
+                        value={questions.find(q => q.id === question.id)?.options.findIndex(o => o.isCorrect)?.toString() || "1"}
+                        onValueChange={(value) => setCorrectOption(question.id, parseInt(value))}
                       >
-                        <div className="flex items-center space-x-2">
+                        <div className="flex items-center space-x-2 mb-2">
                           <RadioGroupItem value="1" id={`q${question.id}-true`} />
                           <Label htmlFor={`q${question.id}-true`}>True</Label>
                         </div>
@@ -481,11 +535,16 @@ export default function CreateQuizPage() {
                       <div className="space-y-2 mt-4">
                         {question.options.map((option) => (
                           <div key={option.id} className="flex items-center space-x-2">
-                            <RadioGroupItem
-                              value={option.id.toString()}
-                              id={`preview-q${question.id}-option-${option.id}`}
+                            <RadioGroup
+                              value={option.isCorrect ? option.id.toString() : ""}
                               disabled
-                            />
+                            >
+                              <RadioGroupItem
+                                value={option.id.toString()}
+                                id={`preview-q${question.id}-option-${option.id}`}
+                                disabled
+                              />
+                            </RadioGroup>
                             <Label htmlFor={`preview-q${question.id}-option-${option.id}`}>
                               {option.text || `Option ${option.id}`}
                             </Label>
@@ -497,11 +556,15 @@ export default function CreateQuizPage() {
                     {question.type === "true-false" && (
                       <div className="space-y-2 mt-4">
                         <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="true" id={`preview-q${question.id}-true`} disabled />
+                          <RadioGroup value="true" disabled>
+                            <RadioGroupItem value="true" id={`preview-q${question.id}-true`} disabled />
+                          </RadioGroup>
                           <Label htmlFor={`preview-q${question.id}-true`}>True</Label>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="false" id={`preview-q${question.id}-false`} disabled />
+                          <RadioGroup value="false" disabled>
+                            <RadioGroupItem value="false" id={`preview-q${question.id}-false`} disabled />
+                          </RadioGroup>
                           <Label htmlFor={`preview-q${question.id}-false`}>False</Label>
                         </div>
                       </div>

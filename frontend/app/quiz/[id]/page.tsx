@@ -1,7 +1,6 @@
 "use client"
-
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useParams } from "next/navigation"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
@@ -9,104 +8,121 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { Clock, CheckCircle, XCircle, Trophy, ArrowUp, ArrowDown, Minus } from "lucide-react"
+import { Clock, CheckCircle, XCircle, Trophy, ArrowUp, ArrowDown, Minus, Timer } from "lucide-react"
+import { useToast } from "@/components/ui/use-toast"
+import { getQuizById } from "@/lib/quiz-data"
 
-export default function QuizPage({ params }: { params: { id: string } }) {
+// Define interfaces for type safety
+interface Option {
+  id: string
+  text: string
+}
+
+interface Question {
+  id: number
+  text: string
+  options: Option[]
+  correctAnswer: string
+}
+
+interface Opponent {
+  name: string
+  avatar: string
+  score: number
+  answered: number
+  rank: number
+  change: number
+}
+
+export default function QuizPage() {
+  const params = useParams()
   const router = useRouter()
-  const [currentQuestion, setCurrentQuestion] = useState(0)
-  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null)
-  const [answers, setAnswers] = useState<(string | null)[]>(Array(5).fill(null))
-  const [timeLeft, setTimeLeft] = useState(300) // 5 minutes in seconds
-  const [quizSubmitted, setQuizSubmitted] = useState(false)
-  const [showFeedback, setShowFeedback] = useState(false)
-  const [opponents, setOpponents] = useState([
-    { name: "Jane Doe", avatar: "JD", score: 0, answered: 0, rank: 2, change: 0 },
-    { name: "Alex Johnson", avatar: "AJ", score: 0, answered: 0, rank: 3, change: 0 },
-    { name: "Sarah Williams", avatar: "SW", score: 0, answered: 0, rank: 4, change: 0 },
-  ])
+  const { toast } = useToast()
+  
+  if (!params?.id) {
+    router.push('/quiz')
+    return <div>Loading...</div>
+  }
+  
+  const quizId = params.id as string
+  const [quiz, setQuiz] = useState<any>(null)
+  
+  // Fetch quiz data
+  useEffect(() => {
+    const quizData = getQuizById(quizId)
+    if (quizData) {
+      setQuiz(quizData)
+    } else {
+      toast({
+        title: "Quiz not found",
+        description: "The quiz you're looking for does not exist",
+        variant: "destructive"
+      })
+      router.push('/quiz')
+    }
+  }, [quizId, router, toast])
+  
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
+  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null)
+  const [answers, setAnswers] = useState<number[]>([])
+  const [timeLeft, setTimeLeft] = useState(600) // 10 minutes in seconds
+  const [isSubmitted, setIsSubmitted] = useState(false)
+  const [score, setScore] = useState(0)
+  const [showResults, setShowResults] = useState(false)
+  const [opponents, setOpponents] = useState<Opponent[]>([])
   const [userRank, setUserRank] = useState(1)
   const [userRankChange, setUserRankChange] = useState(0)
   const [showLiveLeaderboard, setShowLiveLeaderboard] = useState(true)
+  const [isLoading, setIsLoading] = useState(true)
+  const [userQuizId, setUserQuizId] = useState<number | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [result, setResult] = useState<any>(null)
+  const [hasCompletedQuiz, setHasCompletedQuiz] = useState(false)
 
-  // Mock quiz data
-  const quiz = {
-    title: "Database Normalization",
-    course: "Database Systems",
-    questions: [
-      {
-        id: 1,
-        text: "Which normal form eliminates transitive dependencies?",
-        options: [
-          { id: "a", text: "First Normal Form (1NF)" },
-          { id: "b", text: "Second Normal Form (2NF)" },
-          { id: "c", text: "Third Normal Form (3NF)" },
-          { id: "d", text: "Boyce-Codd Normal Form (BCNF)" },
-        ],
-        correctAnswer: "c",
-      },
-      {
-        id: 2,
-        text: "A relation is in 1NF if and only if:",
-        options: [
-          { id: "a", text: "It has no partial dependencies" },
-          { id: "b", text: "It has no transitive dependencies" },
-          { id: "c", text: "All its attributes are atomic" },
-          { id: "d", text: "It has no multi-valued dependencies" },
-        ],
-        correctAnswer: "c",
-      },
-      {
-        id: 3,
-        text: "Which of the following is NOT a type of database key?",
-        options: [
-          { id: "a", text: "Primary Key" },
-          { id: "b", text: "Foreign Key" },
-          { id: "c", text: "Composite Key" },
-          { id: "d", text: "Reference Key" },
-        ],
-        correctAnswer: "d",
-      },
-      {
-        id: 4,
-        text: "What is a superkey?",
-        options: [
-          { id: "a", text: "A key that uniquely identifies each record in a table" },
-          { id: "b", text: "A key that contains no redundant attributes" },
-          { id: "c", text: "A key that references another table" },
-          { id: "d", text: "A key that consists of multiple attributes" },
-        ],
-        correctAnswer: "a",
-      },
-      {
-        id: 5,
-        text: "Which normal form deals with multi-valued dependencies?",
-        options: [
-          { id: "a", text: "3NF" },
-          { id: "b", text: "BCNF" },
-          { id: "c", text: "4NF" },
-          { id: "d", text: "5NF" },
-        ],
-        correctAnswer: "c",
-      },
-    ],
-  }
-
-  // Timer
+  // Check if quiz was already completed
   useEffect(() => {
-    if (timeLeft > 0 && !quizSubmitted) {
-      const timer = setTimeout(() => {
-        setTimeLeft(timeLeft - 1)
+    if (quizId) {
+      // Try to get previous quiz results
+      try {
+        const sessionResult = sessionStorage.getItem(`quiz-result-${quizId}`)
+        if (sessionResult) {
+          setHasCompletedQuiz(true)
+          setResult(JSON.parse(sessionResult))
+        }
+      } catch (err) {
+        console.error('Error checking completed quiz status:', err)
+      }
+      
+      setIsLoading(false)
+    }
+  }, [quizId])
+
+  // Set initial time based on quiz timeLimit
+  useEffect(() => {
+    if (quiz?.timeLimit) {
+      // Convert minutes to seconds
+      setTimeLeft(parseInt(quiz.timeLimit) * 60);
+    }
+  }, [quiz]);
+
+  // Timer effect
+  useEffect(() => {
+    if (!quiz || isLoading) return;
+    
+    if (timeLeft > 0 && !isSubmitted) {
+      const timer = setInterval(() => {
+        setTimeLeft(prev => prev - 1)
       }, 1000)
-      return () => clearTimeout(timer)
-    } else if (timeLeft === 0 && !quizSubmitted) {
+      return () => clearInterval(timer)
+    } else if (timeLeft === 0 && !isSubmitted) {
       handleSubmit()
     }
-  }, [timeLeft, quizSubmitted])
+  }, [timeLeft, isSubmitted, quiz, isLoading])
 
   // Simulate opponent progress
   useEffect(() => {
-    if (quizSubmitted) return
-
+    if (isSubmitted || !quiz || isLoading) return
+    
     const interval = setInterval(() => {
       setOpponents((prev) => {
         const newOpponents = prev.map((opponent) => {
@@ -122,21 +138,23 @@ export default function QuizPage({ params }: { params: { id: string } }) {
           }
           return opponent
         })
-
+        
         // Calculate new rankings
         const allParticipants = [
           {
             name: "You",
-            score: answers.filter((answer, index) => answer === quiz.questions[index].correctAnswer).length * 20,
+            score: answers.filter((answer, index) => 
+              answer === quiz.questions[index]?.correct
+            ).length * 20,
           },
           ...newOpponents.map((o) => ({ name: o.name, score: o.score })),
         ].sort((a, b) => b.score - a.score)
-
+        
         const yourNewRank = allParticipants.findIndex((p) => p.name === "You") + 1
         const rankChange = userRank - yourNewRank
-
+        
         // Update opponent ranks
-        const updatedOpponents = newOpponents.map((opponent, index) => {
+        const updatedOpponents = newOpponents.map((opponent) => {
           const newRank = allParticipants.findIndex((p) => p.name === opponent.name) + 1
           const change = opponent.rank - newRank
           return {
@@ -145,380 +163,257 @@ export default function QuizPage({ params }: { params: { id: string } }) {
             change: change,
           }
         })
-
+        
         // Update user rank
         if (yourNewRank !== userRank) {
           setUserRank(yourNewRank)
           setUserRankChange(rankChange)
         }
-
+        
         return updatedOpponents
       })
     }, 3000)
-
+    
     return () => clearInterval(interval)
-  }, [quizSubmitted, answers, userRank])
+  }, [isSubmitted, answers, userRank, quiz, isLoading])
 
+  // Update leaderboard from API periodically
+  useEffect(() => {
+    if (isSubmitted || !quiz || isLoading) return
+    
+    const fetchLeaderboard = async () => {
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/quiz/${params.id}/leaderboard`, {
+          credentials: 'include'
+        })
+        
+        if (response.ok) {
+          const data = await response.json()
+          setUserRank(data.user_rank)
+          
+          // Update opponents with real data while preserving local changes
+          setOpponents(prev => {
+            return data.opponents.map((newOpp: any) => {
+              const existingOpp = prev.find(o => o.name === newOpp.name)
+              return {
+                ...newOpp,
+                change: existingOpp?.change || 0
+              }
+            })
+          })
+        }
+      } catch (err) {
+        console.error('Error fetching leaderboard:', err)
+      }
+    }
+    
+    // Fetch real leaderboard data every 10 seconds
+    const leaderboardInterval = setInterval(fetchLeaderboard, 10000)
+    return () => clearInterval(leaderboardInterval)
+  }, [params.id, quiz, isSubmitted, isLoading])
+
+  const handleNext = () => {
+    if (selectedAnswer !== null) {
+      const newAnswers = [...answers]
+      newAnswers[currentQuestionIndex] = selectedAnswer
+      setAnswers(newAnswers)
+      
+      if (currentQuestionIndex < quiz.questions.length - 1) {
+        setCurrentQuestionIndex(prev => prev + 1)
+        setSelectedAnswer(null)
+      } else {
+        handleSubmit()
+      }
+    }
+  }
+  
+  const handleSubmit = () => {
+    if (!quiz) return;
+    
+    setIsSubmitted(true)
+    
+    // Calculate score
+    let correctCount = 0
+    quiz.questions.forEach((question: any, index: number) => {
+      if (answers[index] === question.correct) {
+        correctCount++
+      }
+    })
+    
+    setScore(correctCount)
+    setShowResults(true)
+    setHasCompletedQuiz(true)
+    
+    // Save results to sessionStorage for the results page
+    const resultData = {
+      title: quiz.title,
+      course: quiz.course,
+      date: new Date().toLocaleDateString(),
+      score: Math.round((correctCount / quiz.questions.length) * 100),
+      totalQuestions: quiz.questions.length,
+      correctAnswers: correctCount,
+      timeSpent: `${Math.floor((parseInt(quiz.timeLimit) * 60 - timeLeft) / 60)}:${String((parseInt(quiz.timeLimit) * 60 - timeLeft) % 60).padStart(2, '0')}`,
+      rank: "1/1", // Placeholder for now
+      status: correctCount >= (quiz.questions.length / 2) ? "Passed" : "Failed",
+      questions: quiz.questions.map((question: any, index: number) => ({
+        id: question.id,
+        question: question.question,
+        userAnswer: question.options[answers[index] || 0],
+        correctAnswer: question.options[question.correct],
+        isCorrect: answers[index] === question.correct
+      }))
+    }
+    
+    // Store in sessionStorage
+    try {
+      sessionStorage.setItem(`quiz-result-${quizId}`, JSON.stringify(resultData))
+      
+      // Also store list of completed quizzes
+      const completedQuizzes = JSON.parse(sessionStorage.getItem('completedQuizzes') || '[]')
+      if (!completedQuizzes.includes(quizId)) {
+        completedQuizzes.push(quizId)
+        sessionStorage.setItem('completedQuizzes', JSON.stringify(completedQuizzes))
+      }
+    } catch (err) {
+      console.error('Failed to save quiz results to sessionStorage:', err)
+    }
+  }
+  
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
     const secs = seconds % 60
-    return `${mins}:${secs < 10 ? "0" : ""}${secs}`
+    return `${mins}:${secs < 10 ? '0' : ''}${secs}`
   }
-
-  const handleAnswerSelect = (value: string) => {
-    setSelectedAnswer(value)
-    const newAnswers = [...answers]
-    newAnswers[currentQuestion] = value
-    setAnswers(newAnswers)
+  
+  if (isLoading || !quiz) {
+    return <div className="flex items-center justify-center h-[60vh]">Loading...</div>
   }
-
-  const handleNext = () => {
-    if (currentQuestion < quiz.questions.length - 1) {
-      setCurrentQuestion(currentQuestion + 1)
-      setSelectedAnswer(answers[currentQuestion + 1])
-      setShowFeedback(false)
-    }
-  }
-
-  const handlePrevious = () => {
-    if (currentQuestion > 0) {
-      setCurrentQuestion(currentQuestion - 1)
-      setSelectedAnswer(answers[currentQuestion - 1])
-      setShowFeedback(false)
-    }
-  }
-
-  const handleSubmit = () => {
-    setQuizSubmitted(true)
-    // Calculate score and show results
-    setTimeout(() => {
-      router.push("/quiz/results")
-    }, 3000)
-  }
-
-  const handleCheckAnswer = () => {
-    setShowFeedback(true)
-  }
-
-  const toggleLeaderboard = () => {
-    setShowLiveLeaderboard(!showLiveLeaderboard)
-  }
-
-  // Calculate progress percentage
-  const progressPercentage = ((currentQuestion + 1) / quiz.questions.length) * 100
-
-  // Calculate user score
-  const userScore = answers.filter((answer, index) => answer === quiz.questions[index].correctAnswer).length * 20
+  
+  const currentQuestion = quiz.questions[currentQuestionIndex]
+  const progress = ((currentQuestionIndex + 1) / quiz.questions.length) * 100
 
   return (
-    <div className="container mx-auto max-w-6xl py-8">
-      <div className="mb-8 flex flex-col items-start justify-between space-y-4 md:flex-row md:items-center md:space-y-0">
-        <div>
+    <div className="container py-8">
+      <div className="max-w-3xl mx-auto">
+        <div className="mb-6">
           <h1 className="text-3xl font-bold">{quiz.title}</h1>
           <p className="text-muted-foreground">{quiz.course}</p>
         </div>
-        <div className="flex items-center space-x-4">
-          <div className="flex items-center space-x-2 rounded-full bg-primary/10 px-4 py-2">
-            <Clock className="h-5 w-5 text-primary" />
-            <span className="font-medium">{formatTime(timeLeft)}</span>
-          </div>
-          <Button variant="outline" onClick={handleSubmit}>
-            Submit Quiz
-          </Button>
-        </div>
-      </div>
-
-      <div className="grid gap-8 md:grid-cols-3">
-        <div className="md:col-span-2">
-          <Card className="mb-6">
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <CardTitle>
-                  Question {currentQuestion + 1} of {quiz.questions.length}
-                </CardTitle>
-                <Badge variant="outline">
-                  {showFeedback && selectedAnswer === quiz.questions[currentQuestion].correctAnswer
-                    ? "Correct"
-                    : showFeedback
-                      ? "Incorrect"
-                      : "20 Points"}
-                </Badge>
+        
+        {!showResults && !hasCompletedQuiz ? (
+          <>
+            <div className="flex justify-between items-center mb-4">
+              <div className="text-sm">
+                Question {currentQuestionIndex + 1} of {quiz.questions.length}
               </div>
-              <Progress value={progressPercentage} className="h-2" />
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
-                <p className="text-lg font-medium">{quiz.questions[currentQuestion].text}</p>
-                <RadioGroup value={selectedAnswer || ""} onValueChange={handleAnswerSelect} className="space-y-3">
-                  {quiz.questions[currentQuestion].options.map((option) => (
-                    <div
-                      key={option.id}
-                      className={`flex items-center space-x-2 rounded-lg border p-4 transition-colors ${
-                        showFeedback && option.id === quiz.questions[currentQuestion].correctAnswer
-                          ? "border-green-500 bg-green-50 dark:bg-green-900/20"
-                          : showFeedback &&
-                              selectedAnswer === option.id &&
-                              option.id !== quiz.questions[currentQuestion].correctAnswer
-                            ? "border-red-500 bg-red-50 dark:bg-red-900/20"
-                            : "hover:bg-muted"
-                      }`}
-                    >
-                      <RadioGroupItem value={option.id} id={option.id} disabled={showFeedback} />
-                      <Label htmlFor={option.id} className="w-full cursor-pointer">
-                        {option.text}
+              <div className="flex items-center gap-2 text-sm">
+                <Timer className="h-4 w-4" />
+                <span>{formatTime(timeLeft)}</span>
+              </div>
+            </div>
+            
+            <Progress value={progress} className="mb-6" />
+            
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle>{currentQuestion.question}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <RadioGroup
+                  value={selectedAnswer !== null ? selectedAnswer.toString() : undefined}
+                  onValueChange={(value) => setSelectedAnswer(parseInt(value))}
+                >
+                  {currentQuestion.options.map((option: string, index: number) => (
+                    <div key={index} className="flex items-center space-x-2 mb-4">
+                      <RadioGroupItem value={index.toString()} id={`option-${index}`} />
+                      <Label htmlFor={`option-${index}`} className="text-base">
+                        {option}
                       </Label>
-                      {showFeedback && option.id === quiz.questions[currentQuestion].correctAnswer && (
-                        <CheckCircle className="h-5 w-5 text-green-500" />
-                      )}
-                      {showFeedback &&
-                        selectedAnswer === option.id &&
-                        option.id !== quiz.questions[currentQuestion].correctAnswer && (
-                          <XCircle className="h-5 w-5 text-red-500" />
-                        )}
                     </div>
                   ))}
                 </RadioGroup>
+              </CardContent>
+              <CardFooter>
+                <Button
+                  className="w-full" 
+                  onClick={handleNext}
+                  disabled={selectedAnswer === null}
+                >
+                  {currentQuestionIndex < quiz.questions.length - 1 ? 'Next Question' : 'Submit Quiz'}
+                </Button>
+              </CardFooter>
+            </Card>
+          </>
+        ) : hasCompletedQuiz && !showResults ? (
+          <Card>
+            <CardHeader>
+              <CardTitle>Quiz Already Completed</CardTitle>
+              <CardDescription>
+                You have already taken this quiz.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="mb-4">
+                You completed this quiz on {result?.date || 'a previous date'} with a score of {result?.score || 'N/A'}%.
+              </p>
+            </CardContent>
+            <CardFooter className="flex justify-between">
+              <Button variant="outline" onClick={() => router.push('/quiz')}>
+                Back to Quizzes
+              </Button>
+              <Button onClick={() => router.push(`/quiz/results/${quizId}`)}>
+                View Results
+              </Button>
+            </CardFooter>
+          </Card>
+        ) : (
+          <Card>
+            <CardHeader>
+              <CardTitle>Quiz Results</CardTitle>
+              <CardDescription>
+                You scored {score} out of {quiz.questions.length} questions correctly.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                {quiz.questions.map((question: any, index: number) => {
+                  const isCorrect = answers[index] === question.correct
+                  return (
+                    <div key={index} className="border rounded-lg p-4">
+                      <div className="flex items-start gap-3">
+                        {isCorrect ? (
+                          <CheckCircle className="h-5 w-5 text-green-500 mt-0.5" />
+                        ) : (
+                          <XCircle className="h-5 w-5 text-red-500 mt-0.5" />
+                        )}
+                        <div>
+                          <p className="font-medium mb-2">{question.question}</p>
+                          <p className="text-sm text-muted-foreground mb-1">
+                            Your answer: {question.options[answers[index] || 0]}
+                          </p>
+                          {!isCorrect && (
+                            <p className="text-sm text-green-600">
+                              Correct answer: {question.options[question.correct]}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
               </div>
             </CardContent>
             <CardFooter className="flex justify-between">
-              <Button variant="outline" onClick={handlePrevious} disabled={currentQuestion === 0}>
-                Previous
+              <Button variant="outline" onClick={() => router.push('/quiz')}>
+                Back to Quizzes
               </Button>
-              <div className="space-x-2">
-                {!showFeedback && selectedAnswer && <Button onClick={handleCheckAnswer}>Check Answer</Button>}
-                {(showFeedback || !selectedAnswer) && (
-                  <Button onClick={handleNext} disabled={currentQuestion === quiz.questions.length - 1}>
-                    Next
-                  </Button>
-                )}
-              </div>
+              <Button onClick={() => router.push(`/quiz/results/${quizId}`)}>
+                View Detailed Results
+              </Button>
             </CardFooter>
           </Card>
-
-          <div className="grid grid-cols-5 gap-2">
-            {quiz.questions.map((_, index) => (
-              <Button
-                key={index}
-                variant={index === currentQuestion ? "default" : answers[index] ? "outline" : "ghost"}
-                className={`h-10 w-10 ${answers[index] ? "border-primary bg-primary/10 text-primary" : ""}`}
-                onClick={() => {
-                  setCurrentQuestion(index)
-                  setSelectedAnswer(answers[index])
-                  setShowFeedback(false)
-                }}
-              >
-                {index + 1}
-              </Button>
-            ))}
-          </div>
-        </div>
-
-        <div className="space-y-6">
-          <Card className="overflow-hidden">
-            <CardHeader className="bg-muted/50 pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle>Live Leaderboard</CardTitle>
-                <Button variant="ghost" size="sm" onClick={toggleLeaderboard}>
-                  {showLiveLeaderboard ? "Hide" : "Show"}
-                </Button>
-              </div>
-              <CardDescription>See how you compare to others</CardDescription>
-            </CardHeader>
-            <CardContent
-              className={`p-0 transition-all duration-300 ${showLiveLeaderboard ? "max-h-[500px]" : "max-h-0"}`}
-            >
-              <div className="p-4 space-y-4">
-                <div
-                  className={`flex items-center justify-between rounded-lg p-3 ${userRank === 1 ? "bg-amber-100 dark:bg-amber-900/20" : userRank <= 3 ? "bg-primary/10" : ""}`}
-                >
-                  <div className="flex items-center space-x-2">
-                    <div
-                      className={`flex h-8 w-8 items-center justify-center rounded-full ${userRank === 1 ? "bg-amber-500 text-white" : "bg-primary text-primary-foreground"}`}
-                    >
-                      {userRank}
-                    </div>
-                    <Avatar>
-                      <AvatarImage src="/placeholder.svg?height=40&width=40&text=You" />
-                      <AvatarFallback>You</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="font-medium">You</p>
-                      <p className="text-xs">{answers.filter(Boolean).length} answered</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="font-semibold">{userScore} pts</div>
-                    {userRankChange !== 0 && (
-                      <div className="flex items-center text-xs">
-                        {userRankChange > 0 ? (
-                          <>
-                            <ArrowUp className="h-3 w-3 text-green-500 mr-1" />
-                            <span className="text-green-500">+{userRankChange}</span>
-                          </>
-                        ) : userRankChange < 0 ? (
-                          <>
-                            <ArrowDown className="h-3 w-3 text-red-500 mr-1" />
-                            <span className="text-red-500">{userRankChange}</span>
-                          </>
-                        ) : (
-                          <>
-                            <Minus className="h-3 w-3 text-muted-foreground mr-1" />
-                            <span className="text-muted-foreground">0</span>
-                          </>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {opponents.map((opponent, index) => (
-                  <div
-                    key={index}
-                    className={`flex items-center justify-between rounded-lg p-3 ${opponent.rank === 1 ? "bg-amber-100 dark:bg-amber-900/20" : opponent.rank <= 3 ? "bg-muted/50" : ""}`}
-                  >
-                    <div className="flex items-center space-x-2">
-                      <div
-                        className={`flex h-8 w-8 items-center justify-center rounded-full ${opponent.rank === 1 ? "bg-amber-500 text-white" : "bg-muted"}`}
-                      >
-                        {opponent.rank}
-                      </div>
-                      <Avatar>
-                        <AvatarImage src={`/placeholder.svg?height=40&width=40&text=${opponent.avatar}`} />
-                        <AvatarFallback>{opponent.avatar}</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-medium">{opponent.name}</p>
-                        <p className="text-xs">{opponent.answered} answered</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-semibold">{opponent.score} pts</div>
-                      {opponent.change !== 0 && (
-                        <div className="flex items-center justify-end text-xs">
-                          {opponent.change > 0 ? (
-                            <>
-                              <ArrowUp className="h-3 w-3 text-green-500 mr-1" />
-                              <span className="text-green-500">+{opponent.change}</span>
-                            </>
-                          ) : opponent.change < 0 ? (
-                            <>
-                              <ArrowDown className="h-3 w-3 text-red-500 mr-1" />
-                              <span className="text-red-500">{opponent.change}</span>
-                            </>
-                          ) : (
-                            <>
-                              <Minus className="h-3 w-3 text-muted-foreground mr-1" />
-                              <span className="text-muted-foreground">0</span>
-                            </>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Quiz Stats</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Questions:</span>
-                  <span>{quiz.questions.length}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Answered:</span>
-                  <span>
-                    {answers.filter(Boolean).length} of {quiz.questions.length}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Time Left:</span>
-                  <span>{formatTime(timeLeft)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Your Score:</span>
-                  <span className="font-semibold">{userScore} pts</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Your Rank:</span>
-                  <span className="font-semibold">
-                    {userRank} of {opponents.length + 1}
-                  </span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Trophy className="mr-2 h-5 w-5 text-primary" />
-                Quiz Rewards
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <div className="mr-3 flex h-8 w-8 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/20">
-                      <Trophy className="h-4 w-4 text-amber-600" />
-                    </div>
-                    <span>1st Place</span>
-                  </div>
-                  <Badge variant="outline">500 XP</Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <div className="mr-3 flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">
-                      <Trophy className="h-4 w-4 text-gray-500" />
-                    </div>
-                    <span>2nd Place</span>
-                  </div>
-                  <Badge variant="outline">300 XP</Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <div className="mr-3 flex h-8 w-8 items-center justify-center rounded-full bg-amber-50 dark:bg-amber-900/10">
-                      <Trophy className="h-4 w-4 text-amber-700" />
-                    </div>
-                    <span>3rd Place</span>
-                  </div>
-                  <Badge variant="outline">200 XP</Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <div className="mr-3 flex h-8 w-8 items-center justify-center rounded-full bg-muted">
-                      <CheckCircle className="h-4 w-4 text-muted-foreground" />
-                    </div>
-                    <span>Completion</span>
-                  </div>
-                  <Badge variant="outline">100 XP</Badge>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        )}
       </div>
-
-      {quizSubmitted && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
-          <Card className="w-full max-w-md">
-            <CardHeader>
-              <CardTitle className="text-center">Quiz Submitted!</CardTitle>
-              <CardDescription className="text-center">Calculating your results...</CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-col items-center justify-center space-y-4 p-6">
-              <div className="h-16 w-16 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
-              <p>Redirecting to results page...</p>
-            </CardContent>
-          </Card>
-        </div>
-      )}
     </div>
   )
 }
