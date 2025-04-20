@@ -1,49 +1,59 @@
-import Link from "next/link"
-import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Calendar, Clock, Trophy, CheckCircle2, AlertCircle } from "lucide-react"
+import Link from "next/link";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Calendar,
+  Clock,
+  Trophy,
+  CheckCircle2,
+  AlertCircle,
+} from "lucide-react";
 
 interface QuizCardProps {
   quiz: {
-    id: string
-    title: string
-    dueDate: string
-    status: string
-    score?: string
-    questions: number
-    timeLimit: string
-  }
-  courseId: string
-  showDetails?: boolean
+    id: string;
+    title: string;
+    dueDate: string;
+    status: string;
+    score?: string;
+    questions: number;
+    timeLimit: string;
+  };
+  courseId: string;
+  showDetails?: boolean;
 }
 
-export function QuizCard({ quiz, courseId, showDetails = false }: QuizCardProps) {
+export function QuizCard({
+  quiz,
+  courseId,
+  showDetails = false,
+}: QuizCardProps) {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "completed":
-        return <Badge variant="success">Completed</Badge>
+        return <Badge variant="secondary">Completed</Badge>;
       case "upcoming":
-        return <Badge variant="warning">Upcoming</Badge>
+        return <Badge variant="default">Upcoming</Badge>;
       case "not-started":
-        return <Badge variant="outline">Not Started</Badge>
+        return <Badge variant="outline">Not Started</Badge>;
       default:
-        return <Badge variant="outline">{status}</Badge>
+        return <Badge variant="outline">{status}</Badge>;
     }
-  }
+  };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "completed":
-        return <CheckCircle2 className="h-5 w-5 text-green-500" />
+        return <CheckCircle2 className="h-5 w-5 text-green-500" />;
       case "upcoming":
-        return <AlertCircle className="h-5 w-5 text-yellow-500" />
+        return <AlertCircle className="h-5 w-5 text-yellow-500" />;
       case "not-started":
-        return <Clock className="h-5 w-5 text-muted-foreground" />
+        return <Clock className="h-5 w-5 text-muted-foreground" />;
       default:
-        return <Trophy className="h-5 w-5 text-muted-foreground" />
+        return <Trophy className="h-5 w-5 text-muted-foreground" />;
     }
-  }
+  };
 
   return (
     <Card>
@@ -84,12 +94,16 @@ export function QuizCard({ quiz, courseId, showDetails = false }: QuizCardProps)
             </div>
             <Button asChild className="w-full md:w-auto">
               <Link href={`/quiz/${quiz.id}`}>
-                {quiz.status === "completed" ? "View Results" : quiz.status === "upcoming" ? "Prepare" : "Start Quiz"}
+                {quiz.status === "completed"
+                  ? "View Results"
+                  : quiz.status === "upcoming"
+                  ? "Prepare"
+                  : "Start Quiz"}
               </Link>
             </Button>
           </div>
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

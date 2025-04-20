@@ -1,9 +1,9 @@
-"use client"
-import type React from "react"
-import { useState, useEffect } from "react"
-import Link from "next/link"
-import { usePathname, useRouter } from "next/navigation"
-import { useUser, useClerk } from "@clerk/nextjs"
+"use client";
+import type React from "react";
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { useUser, useClerk } from "@clerk/nextjs";
 import {
   BookOpen,
   Home,
@@ -22,43 +22,43 @@ import {
   ClipboardList,
   Globe,
   School,
-} from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { useTheme } from "next-themes"
-import { cn } from "@/lib/utils"
-import { Badge } from "@/components/ui/badge"
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useTheme } from "next-themes";
+import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 
 interface SidebarLayoutProps {
-  children: React.ReactNode
+  children: React.ReactNode;
 }
 
 export function SidebarLayout({ children }: SidebarLayoutProps) {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
-  const pathname = usePathname()
-  const { theme, setTheme } = useTheme()
-  const [isMounted, setIsMounted] = useState(false)
-  const { user } = useUser()
-  const { signOut } = useClerk()
-  const router = useRouter()
-  const [isTeacher, setIsTeacher] = useState(false)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const pathname = usePathname();
+  const { theme, setTheme } = useTheme();
+  const [isMounted, setIsMounted] = useState(false);
+  const { user } = useUser();
+  const { signOut } = useClerk();
+  const router = useRouter();
+  const [isTeacher, setIsTeacher] = useState(false);
 
   useEffect(() => {
-    setIsMounted(true)
+    setIsMounted(true);
     // Check if the user is on a teacher page
-    setIsTeacher(pathname?.includes("/teacher") ?? false)
-  }, [pathname])
+    setIsTeacher(pathname?.includes("/teacher") ?? false);
+  }, [pathname]);
 
   const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen)
-  }
+    setIsSidebarOpen(!isSidebarOpen);
+  };
 
   const closeSidebar = () => {
-    setIsSidebarOpen(false)
-  }
+    setIsSidebarOpen(false);
+  };
 
   const handleSignOut = () => {
-    signOut(() => router.push("/"))
-  }
+    signOut(() => router.push("/"));
+  };
 
   const studentNavigation = [
     { name: "Dashboard", href: "/dashboard", icon: Home },
@@ -70,7 +70,7 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
     { name: "Competitions", href: "/competitions", icon: Globe },
     { name: "Leaderboard", href: "/leaderboard", icon: BarChart3 },
     { name: "Profile", href: "/profile", icon: User },
-  ]
+  ];
 
   const teacherNavigation = [
     { name: "Dashboard", href: "/teacher/dashboard", icon: Home },
@@ -81,24 +81,29 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
     { name: "Competitions", href: "/competitions", icon: Globe },
     { name: "Reports", href: "/teacher/reports", icon: BarChart3 },
     { name: "Profile", href: "/profile", icon: User },
-  ]
+  ];
 
-  const navigation = isTeacher ? teacherNavigation : studentNavigation
+  const navigation = isTeacher ? teacherNavigation : studentNavigation;
 
   const toggleTheme = () => {
-    setTheme(theme === "dark" ? "light" : "dark")
-  }
+    setTheme(theme === "dark" ? "light" : "dark");
+  };
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
       {/* Mobile sidebar backdrop */}
-      {isSidebarOpen && <div className="fixed inset-0 z-40 bg-black/50 lg:hidden" onClick={closeSidebar} />}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+          onClick={closeSidebar}
+        />
+      )}
 
       {/* Sidebar */}
       <div
         className={cn(
           "fixed inset-y-0 left-0 z-50 w-64 transform bg-sidebar shadow-lg transition-transform duration-200 ease-in-out lg:relative lg:translate-x-0",
-          isSidebarOpen ? "translate-x-0" : "-translate-x-full",
+          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
         <div className="flex h-full flex-col">
@@ -110,12 +115,20 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
             >
               <span className="text-xl font-bold text-primary">StudySync</span>
               {isTeacher && (
-                <Badge variant="outline" className="ml-2 bg-primary/10 text-primary">
+                <Badge
+                  variant="outline"
+                  className="ml-2 bg-primary/10 text-primary"
+                >
                   Teacher
                 </Badge>
               )}
             </Link>
-            <Button variant="ghost" size="icon" onClick={toggleSidebar} className="lg:hidden">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleSidebar}
+              className="lg:hidden"
+            >
               <X className="h-5 w-5" />
             </Button>
           </div>
@@ -137,9 +150,10 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
                 onClick={closeSidebar}
                 className={cn(
                   "group flex items-center rounded-md px-2 py-2 text-sm font-medium transition-colors",
-                  pathname === item.href || pathname?.startsWith(`${item.href}/`)
+                  pathname === item.href ||
+                    pathname?.startsWith(`${item.href}/`)
                     ? "bg-primary text-primary-foreground"
-                    : "text-sidebar-foreground hover:bg-primary/10 hover:text-primary",
+                    : "text-sidebar-foreground hover:bg-primary/10 hover:text-primary"
                 )}
               >
                 <item.icon className="mr-3 h-5 w-5 flex-shrink-0" />
@@ -153,7 +167,11 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
               <div className="flex items-center space-x-2">
                 <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
                   {user?.imageUrl ? (
-                    <img src={user.imageUrl || "/placeholder.svg"} alt="Profile" className="h-8 w-8 rounded-full" />
+                    <img
+                      src={user.imageUrl || "/placeholder.svg"}
+                      alt="Profile"
+                      className="h-8 w-8 rounded-full"
+                    />
                   ) : (
                     <User className="h-4 w-4 text-primary" />
                   )}
@@ -162,12 +180,18 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
                   <p className="text-sm font-medium">
                     {user?.firstName} {user?.lastName}
                   </p>
-                  <p className="text-xs text-muted-foreground">{isTeacher ? "Teacher" : "Student"}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {isTeacher ? "Teacher" : "Student"}
+                  </p>
                 </div>
               </div>
               {isMounted && (
                 <Button variant="ghost" size="icon" onClick={toggleTheme}>
-                  {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+                  {theme === "dark" ? (
+                    <Sun className="h-5 w-5" />
+                  ) : (
+                    <Moon className="h-5 w-5" />
+                  )}
                 </Button>
               )}
             </div>
@@ -176,9 +200,12 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
               variant="outline"
               className="mt-4 w-full justify-start border-primary/20 hover:bg-primary/5 hover:border-primary"
               size="sm"
+              asChild
             >
-              <Settings className="mr-2 h-4 w-4" />
-              Settings
+              <Link href="/profile/settings">
+                <Settings className="mr-2 h-4 w-4" />
+                Settings
+              </Link>
             </Button>
 
             <Button
@@ -199,12 +226,22 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
         {/* Top navigation */}
         <header className="bg-card shadow z-10">
           <div className="flex h-16 items-center justify-between px-4">
-            <Button variant="ghost" size="icon" onClick={toggleSidebar} className="lg:hidden">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleSidebar}
+              className="lg:hidden"
+            >
               <Menu className="h-6 w-6" />
             </Button>
             <div className="flex items-center space-x-4">
               {isTeacher && (
-                <Button variant="outline" size="sm" className="border-primary/20 hover:bg-primary/5" asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-primary/20 hover:bg-primary/5"
+                  asChild
+                >
                   <Link href="/dashboard">
                     <School className="mr-2 h-4 w-4 text-primary" />
                     Switch to Student View
@@ -212,19 +249,32 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
                 </Button>
               )}
               {!isTeacher && user && (
-                <Button variant="outline" size="sm" className="border-primary/20 hover:bg-primary/5" asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-primary/20 hover:bg-primary/5"
+                  asChild
+                >
                   <Link href="/teacher/dashboard">
                     <GraduationCap className="mr-2 h-4 w-4 text-primary" />
                     Switch to Teacher View
                   </Link>
                 </Button>
               )}
-              <Button variant="outline" size="sm" className="border-primary/20 hover:bg-primary/5">
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-primary/20 hover:bg-primary/5"
+              >
                 Help
               </Button>
               <div className="h-8 w-8 rounded-full bg-primary/10 lg:hidden flex items-center justify-center">
                 {user?.imageUrl ? (
-                  <img src={user.imageUrl || "/placeholder.svg"} alt="Profile" className="h-8 w-8 rounded-full" />
+                  <img
+                    src={user.imageUrl || "/placeholder.svg"}
+                    alt="Profile"
+                    className="h-8 w-8 rounded-full"
+                  />
                 ) : (
                   <User className="h-4 w-4 text-primary" />
                 )}
@@ -235,9 +285,11 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
 
         {/* Page content */}
         <main className="flex-1 overflow-auto bg-background">
-          <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">{children}</div>
+          <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+            {children}
+          </div>
         </main>
       </div>
     </div>
-  )
+  );
 }
