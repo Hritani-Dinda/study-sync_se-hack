@@ -24,12 +24,12 @@ export default function CourseDetailPage() {
   const [activeTab, setActiveTab] = useState("overview")
 
   useEffect(() => {
-    if (params.id) {
-      const courseData = getCourseById(params.id as string)
+    if (params!.id) {
+      const courseData = getCourseById(params!.id as string)
       setCourse(courseData)
       setLoading(false)
     }
-  }, [params.id])
+  }, [params!.id])
 
   if (loading) {
     return (
@@ -79,7 +79,6 @@ export default function CourseDetailPage() {
       content: [
         { id: "video2", type: "video", title: "Core Principles", completed: true, unlocked: true },
         { id: "video3", type: "video", title: "Advanced Techniques", completed: true, unlocked: true },
-        { id: 'quiz2", type  title: "Advanced Techniques', completed: true, unlocked: true },
         { id: "quiz2", type: "quiz", title: "Core Concepts Quiz", completed: false, unlocked: true },
         { id: "assignment2", type: "assignment", title: "Practical Application", completed: false, unlocked: true },
       ],
@@ -116,7 +115,7 @@ export default function CourseDetailPage() {
             </p>
           </div>
           <div className="flex items-center space-x-4">
-            <Badge variant={course.progress >= 90 ? "success" : course.progress >= 50 ? "warning" : "default"}>
+            <Badge variant={course.progress >= 90 ? "secondary" : course.progress >= 50 ? "outline" : "default"}>
               {course.progress >= 90 ? "Almost Complete" : course.progress >= 50 ? "In Progress" : "Just Started"}
             </Badge>
             <div className="flex items-center text-sm text-muted-foreground">
@@ -289,7 +288,7 @@ export default function CourseDetailPage() {
                   <CardDescription>Your recent interactions with this course</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <RecentActivityFeed courseId={params.id as string} />
+                  <RecentActivityFeed courseId={params!.id as string} />
                 </CardContent>
               </Card>
             </TabsContent>
@@ -324,8 +323,8 @@ export default function CourseDetailPage() {
                             <p className="text-sm text-muted-foreground">{module.description}</p>
                           </div>
                           <div className="flex items-center space-x-3">
-                            {module.completed && <Badge variant="success">Completed</Badge>}
-                            {!module.completed && module.unlocked && <Badge variant="warning">In Progress</Badge>}
+                            {module.completed && <Badge variant="outline">Completed</Badge>}
+                            {!module.completed && module.unlocked && <Badge variant="outline">In Progress</Badge>}
                             {!module.unlocked && <Badge variant="outline">Locked</Badge>}
                           </div>
                         </div>
@@ -403,7 +402,7 @@ export default function CourseDetailPage() {
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {course.videos?.map((video, index) => (
-                      <VideoCard key={index} video={video} courseId={params.id as string} />
+                      <VideoCard key={index} video={video} courseId={params!.id as string} />
                     )) || (
                       <>
                         <VideoCard
@@ -415,7 +414,7 @@ export default function CourseDetailPage() {
                             watched: true,
                             date: "April 10, 2023",
                           }}
-                          courseId={params.id as string}
+                          courseId={params!.id as string}
                         />
                         <VideoCard
                           video={{
@@ -426,7 +425,7 @@ export default function CourseDetailPage() {
                             watched: true,
                             date: "April 12, 2023",
                           }}
-                          courseId={params.id as string}
+                          courseId={params!.id as string}
                         />
                         <VideoCard
                           video={{
@@ -437,7 +436,7 @@ export default function CourseDetailPage() {
                             watched: true,
                             date: "April 15, 2023",
                           }}
-                          courseId={params.id as string}
+                          courseId={params!.id as string}
                         />
                         <VideoCard
                           video={{
@@ -448,7 +447,7 @@ export default function CourseDetailPage() {
                             watched: false,
                             date: "April 18, 2023",
                           }}
-                          courseId={params.id as string}
+                          courseId={params!.id as string}
                         />
                       </>
                     )}
@@ -456,7 +455,7 @@ export default function CourseDetailPage() {
                 </CardContent>
                 <CardFooter>
                   <Button asChild className="w-full">
-                    <Link href={`/courses/${params.id}/videos`}>View All Videos</Link>
+                    <Link href={`/courses/${params!.id}/videos`}>View All Videos</Link>
                   </Button>
                 </CardFooter>
               </Card>
@@ -471,7 +470,7 @@ export default function CourseDetailPage() {
                 <CardContent>
                   <div className="space-y-4">
                     {course.assignments?.map((assignment, index) => (
-                      <AssignmentCard key={index} assignment={assignment} courseId={params.id as string} />
+                      <AssignmentCard key={index} assignment={assignment} courseId={params!.id as string} />
                     )) || (
                       <>
                         <AssignmentCard
@@ -483,7 +482,7 @@ export default function CourseDetailPage() {
                             grade: "95/100",
                             description: "Apply the fundamental concepts covered in the first module.",
                           }}
-                          courseId={params.id as string}
+                          courseId={params!.id as string}
                         />
                         <AssignmentCard
                           assignment={{
@@ -494,7 +493,7 @@ export default function CourseDetailPage() {
                             grade: "88/100",
                             description: "Solve a set of problems using the techniques learned in class.",
                           }}
-                          courseId={params.id as string}
+                          courseId={params!.id as string}
                         />
                         <AssignmentCard
                           assignment={{
@@ -504,7 +503,7 @@ export default function CourseDetailPage() {
                             status: "pending",
                             description: "Analyze the provided dataset and present your findings.",
                           }}
-                          courseId={params.id as string}
+                          courseId={params!.id as string}
                         />
                         <AssignmentCard
                           assignment={{
@@ -515,7 +514,7 @@ export default function CourseDetailPage() {
                             description:
                               "Create a comprehensive project that demonstrates all the skills learned in this course.",
                           }}
-                          courseId={params.id as string}
+                          courseId={params!.id as string}
                         />
                       </>
                     )}
@@ -523,7 +522,7 @@ export default function CourseDetailPage() {
                 </CardContent>
                 <CardFooter>
                   <Button asChild className="w-full">
-                    <Link href={`/courses/${params.id}/assignments`}>View All Assignments</Link>
+                    <Link href={`/courses/${params!.id}/assignments`}>View All Assignments</Link>
                   </Button>
                 </CardFooter>
               </Card>
@@ -538,7 +537,7 @@ export default function CourseDetailPage() {
                 <CardContent>
                   <div className="space-y-4">
                     {course.quizzes?.map((quiz, index) => (
-                      <QuizCard key={index} quiz={quiz} courseId={params.id as string} />
+                      <QuizCard key={index} quiz={quiz} courseId={params!.id as string} />
                     )) || (
                       <>
                         <QuizCard
@@ -551,7 +550,7 @@ export default function CourseDetailPage() {
                             questions: 10,
                             timeLimit: "15 minutes",
                           }}
-                          courseId={params.id as string}
+                          courseId={params!.id as string}
                         />
                         <QuizCard
                           quiz={{
@@ -563,7 +562,7 @@ export default function CourseDetailPage() {
                             questions: 15,
                             timeLimit: "20 minutes",
                           }}
-                          courseId={params.id as string}
+                          courseId={params!.id as string}
                         />
                         <QuizCard
                           quiz={{
@@ -574,7 +573,7 @@ export default function CourseDetailPage() {
                             questions: 25,
                             timeLimit: "45 minutes",
                           }}
-                          courseId={params.id as string}
+                          courseId={params!.id as string}
                         />
                         <QuizCard
                           quiz={{
@@ -585,7 +584,7 @@ export default function CourseDetailPage() {
                             questions: 30,
                             timeLimit: "60 minutes",
                           }}
-                          courseId={params.id as string}
+                          courseId={params!.id as string}
                         />
                       </>
                     )}
@@ -593,7 +592,7 @@ export default function CourseDetailPage() {
                 </CardContent>
                 <CardFooter>
                   <Button asChild className="w-full">
-                    <Link href={`/courses/${params.id}/quizzes`}>View All Quizzes</Link>
+                    <Link href={`/courses/${params!.id}/quizzes`}>View All Quizzes</Link>
                   </Button>
                 </CardFooter>
               </Card>
@@ -608,11 +607,11 @@ export default function CourseDetailPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="aspect-video w-full overflow-hidden rounded-md">
+                <div className="aspect-video w-full overflow-hidden rounded-md flex items-center justify-center">
                   <img
                     src={course.image || "/placeholder.svg?height=200&width=400&text=Course+Image"}
                     alt={course.title}
-                    className="h-full w-full object-cover"
+                    className="max-h-[200px] max-w-[90%] object-contain"
                   />
                 </div>
 
@@ -698,7 +697,7 @@ export default function CourseDetailPage() {
             </CardContent>
             <CardFooter>
               <Button className="w-full" asChild>
-                <Link href={`/courses/${params.id}/modules/module1`}>Continue Learning</Link>
+                <Link href={`/courses/${params!.id}/modules/module1`}>Continue Learning</Link>
               </Button>
             </CardFooter>
           </Card>
