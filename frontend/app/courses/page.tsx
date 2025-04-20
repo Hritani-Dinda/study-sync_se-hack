@@ -42,7 +42,7 @@ const coursesData = [
     title: "Introduction to Computer Science",
     instructor: "Dr. Alan Turing",
     progress: 75,
-    image: "/placeholder.svg?height=100&width=200&text=CS101",
+    image: "monitor.png",
     duration: "8 weeks",
     students: 1240,
     badge: "In Progress",
@@ -54,7 +54,7 @@ const coursesData = [
     title: "Data Structures and Algorithms",
     instructor: "Prof. Ada Lovelace",
     progress: 45,
-    image: "/placeholder.svg?height=100&width=200&text=CS201",
+    image: "structure.png",
     duration: "10 weeks",
     students: 890,
     badge: "In Progress",
@@ -66,7 +66,7 @@ const coursesData = [
     title: "Database Systems",
     instructor: "Dr. Edgar Codd",
     progress: 90,
-    image: "/placeholder.svg?height=100&width=200&text=CS301",
+    image: "database.png",
     duration: "12 weeks",
     students: 650,
     badge: "Almost Complete",
@@ -78,7 +78,7 @@ const coursesData = [
     title: "Web Development",
     instructor: "Prof. Tim Berners-Lee",
     progress: 30,
-    image: "/placeholder.svg?height=100&width=200&text=CS401",
+    image: "code.png",
     duration: "8 weeks",
     students: 1120,
     badge: "In Progress",
@@ -89,7 +89,7 @@ const coursesData = [
     title: "Artificial Intelligence",
     instructor: "Dr. Geoffrey Hinton",
     progress: 15,
-    image: "/placeholder.svg?height=100&width=200&text=CS501",
+    image: "chip.png",
     duration: "14 weeks",
     students: 780,
     badge: "Just Started",
@@ -103,11 +103,11 @@ function CourseCard({ course }: { course: (typeof coursesData)[0] }) {
   return (
     <Link key={course.id} href={`/courses/${course.id}`}>
       <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300 h-full flex flex-col">
-        <div className="aspect-video w-full overflow-hidden">
+        <div className="aspect-video w-full overflow-hidden flex items-center justify-center">
           <img
             src={course.image || "/placeholder.svg"}
             alt={course.title}
-            className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
+            className="h-[200px] w-full object-contain transition-transform duration-300 hover:scale-105"
           />
         </div>
         <CardHeader className="p-4 pb-0">
