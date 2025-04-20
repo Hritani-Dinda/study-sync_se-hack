@@ -166,119 +166,114 @@ function CourseCard({
   onJoinCourse?: (courseId: string) => void;
 }) {
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300 h-full flex flex-col">
-      <div className="relative aspect-video w-full overflow-hidden bg-muted">
-        <img
-          src={course.image}
-          alt={course.title}
-          className="absolute inset-0 h-full w-full object-cover object-center transition-transform duration-300 hover:scale-105"
-        />
-      </div>
-      <CardHeader className="p-4 pb-0">
-        <div className="flex items-start justify-between">
-          <CardTitle className="text-lg">{course.title}</CardTitle>
-          <div className="flex items-center space-x-2">
-            {course.isRecommended && (
-              <Badge variant="default" className="bg-green-500">
-                Recommended
-              </Badge>
-            )}
+    <Link key={course.id} href={`/courses/${course.id}`}>
+      <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300 h-full flex flex-col">
+        <div className="aspect-video w-full overflow-hidden flex items-center justify-center">
+          <img
+            src={course.image || "/placeholder.svg"}
+            alt={course.title}
+            className="h-[200px] w-full object-contain transition-transform duration-300 hover:scale-105"
+          />
+        </div>
+        <CardHeader className="p-4 pb-0">
+          <div className="flex items-start justify-between">
+            <CardTitle className="text-lg">{course.title}</CardTitle>
             <Badge variant={course.progress === 100 ? "default" : "secondary"}>
               {course.badge}
             </Badge>
           </div>
-        </div>
-        <CardDescription className="flex items-center">
-          <Avatar className="mr-2 h-6 w-6">
-            <AvatarImage
-              src={`/placeholder.svg?height=30&width=30&text=${course.instructor
-                .split(" ")
-                .map((n) => n[0])
-                .join("")}`}
-            />
-            <AvatarFallback>
-              {course.instructor
-                .split(" ")
-                .map((n) => n[0])
-                .join("")}
-            </AvatarFallback>
-          </Avatar>
-          {course.instructor}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="p-4 flex-grow">
-        <div className="space-y-2">
-          {course.progress > 0 && (
-            <>
-              <div className="flex items-center justify-between text-sm">
-                <span>Progress</span>
-                <span>{course.progress}%</span>
+          <CardDescription className="flex items-center">
+            <Avatar className="mr-2 h-6 w-6">
+              <AvatarImage
+                src={`/placeholder.svg?height=30&width=30&text=${course.instructor
+                  .split(" ")
+                  .map((n) => n[0])
+                  .join("")}`}
+              />
+              <AvatarFallback>
+                {course.instructor
+                  .split(" ")
+                  .map((n) => n[0])
+                  .join("")}
+              </AvatarFallback>
+            </Avatar>
+            {course.instructor}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="p-4 flex-grow">
+          <div className="space-y-2">
+            {course.progress > 0 && (
+              <>
+                <div className="flex items-center justify-between text-sm">
+                  <span>Progress</span>
+                  <span>{course.progress}%</span>
+                </div>
+                <Progress value={course.progress} className="h-2" />
+              </>
+            )}
+            <div className="mt-4 flex items-center justify-between text-sm text-muted-foreground">
+              <div className="flex items-center">
+                <Clock className="mr-1 h-4 w-4" />
+                {course.duration}
               </div>
-              <Progress value={course.progress} className="h-2" />
-            </>
-          )}
-          <div className="mt-4 flex items-center justify-between text-sm text-muted-foreground">
-            <div className="flex items-center">
-              <Clock className="mr-1 h-4 w-4" />
-              {course.duration}
+              <div className="flex items-center">
+                <Users className="mr-1 h-4 w-4" />
+                {course.students} students
+              </div>
             </div>
-            <div className="flex items-center">
-              <Users className="mr-1 h-4 w-4" />
-              {course.students} students
-            </div>
-          </div>
-          {course.description && (
-            <p className="mt-4 text-sm text-muted-foreground line-clamp-2">
-              {course.description}
-            </p>
-          )}
-          <div className="mt-4 space-y-2">
-            <div className="flex items-center text-sm">
-              <span className="font-medium mr-2">Category:</span>
-              <Badge variant="outline">{course.category}</Badge>
-            </div>
-            <div className="flex items-center text-sm">
-              <span className="font-medium mr-2">Level:</span>
-              <Badge variant="outline">{course.level}</Badge>
-            </div>
-            <div className="flex items-center text-sm">
-              <span className="font-medium mr-2">Prerequisites:</span>
-              <span className="text-muted-foreground">
-                {course.prerequisites}
-              </span>
-            </div>
-            <div className="flex flex-wrap gap-1 mt-2">
-              {course.skills.map((skill, index) => (
-                <Badge key={index} variant="secondary" className="text-xs">
-                  {skill}
-                </Badge>
-              ))}
+            {course.description && (
+              <p className="mt-4 text-sm text-muted-foreground line-clamp-2">
+                {course.description}
+              </p>
+            )}
+            <div className="mt-4 space-y-2">
+              <div className="flex items-center text-sm">
+                <span className="font-medium mr-2">Category:</span>
+                <Badge variant="outline">{course.category}</Badge>
+              </div>
+              <div className="flex items-center text-sm">
+                <span className="font-medium mr-2">Level:</span>
+                <Badge variant="outline">{course.level}</Badge>
+              </div>
+              <div className="flex items-center text-sm">
+                <span className="font-medium mr-2">Prerequisites:</span>
+                <span className="text-muted-foreground">
+                  {course.prerequisites}
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-1 mt-2">
+                {course.skills.map((skill, index) => (
+                  <Badge key={index} variant="secondary" className="text-xs">
+                    {skill}
+                  </Badge>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
-      </CardContent>
-      <CardFooter className="p-4 pt-0">
-        {course.progress === 0 ? (
-          <Button
-            className="w-full justify-between"
-            onClick={() => onJoinCourse?.(course.id)}
-          >
-            Join Course
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        ) : course.progress === 100 ? (
-          <Button variant="outline" className="w-full justify-between">
-            View Certificate
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        ) : (
-          <Button variant="outline" className="w-full justify-between">
-            Continue Learning
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        )}
-      </CardFooter>
-    </Card>
+        </CardContent>
+        <CardFooter className="p-4 pt-0">
+          {course.progress === 0 ? (
+            <Button
+              className="w-full justify-between"
+              onClick={() => onJoinCourse?.(course.id)}
+            >
+              Join Course
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          ) : course.progress === 100 ? (
+            <Button variant="outline" className="w-full justify-between">
+              View Certificate
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          ) : (
+            <Button variant="outline" className="w-full justify-between">
+              Continue Learning
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          )}
+        </CardFooter>
+      </Card>
+    </Link>
   );
 }
 

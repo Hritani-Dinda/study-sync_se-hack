@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { BookOpen, Calendar, Trophy, Clock, Bell } from "lucide-react";
+import { BookOpen, Calendar, Trophy, Clock, Bell, Users } from "lucide-react";
 import { DashboardCarousel } from "@/components/dashboard/dashboard-carousel";
 import { CourseCard } from "@/components/dashboard/course-card";
 import { ProgressChart } from "@/components/dashboard/progress-chart";
@@ -29,6 +29,7 @@ import {
   DialogFooter,
   DialogClose,
 } from "@/components/ui/dialog";
+import { AttendanceDashboard } from "@/components/dashboard/attendance-dashboard";;
 
 type DashboardClientProps = {
   firstName: string;
@@ -179,14 +180,17 @@ export default function DashboardClient({
       <DashboardCarousel />
 
       <Tabs
+       
         defaultValue="overview"
+       
         className="space-y-8"
+       
         onValueChange={setActiveTab}
+      
       >
-        <TabsList>
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="courses">My Courses</TabsTrigger>
-          <TabsTrigger value="quizzes">Upcoming Quizzes</TabsTrigger>
+          <TabsTrigger value="courses">Courses</TabsTrigger>
           <TabsTrigger value="performance">Performance</TabsTrigger>
           <TabsTrigger value="attendance">Attendance</TabsTrigger>
         </TabsList>
@@ -334,6 +338,86 @@ export default function DashboardClient({
           </div>
         </TabsContent>
 
+        <TabsContent value="performance" className="space-y-6">
+          <div className="grid gap-6 md:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>Performance Summary</CardTitle>
+                <CardDescription>
+                  Your academic performance across all courses
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+                    <div className="space-y-1">
+                      <p className="font-medium">Average Quiz Score</p>
+                      <p className="text-sm text-muted-foreground">
+                        Across all courses
+                      </p>
+                    </div>
+                    <div className="text-2xl font-bold text-primary">87%</div>
+                  </div>
+                  <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+                    <div className="space-y-1">
+                      <p className="font-medium">Attendance Rate</p>
+                      <p className="text-sm text-muted-foreground">
+                        Virtual sessions
+                      </p>
+                    </div>
+                    <div className="text-2xl font-bold text-primary">85%</div>
+                  </div>
+                  <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+                    <div className="space-y-1">
+                      <p className="font-medium">Assignment Completion</p>
+                      <p className="text-sm text-muted-foreground">
+                        Submission rate
+                      </p>
+                    </div>
+                    <div className="text-2xl font-bold text-primary">92%</div>
+                  </div>
+                  <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+                    <div className="space-y-1">
+                      <p className="font-medium">Participation</p>
+                      <p className="text-sm text-muted-foreground">
+                        Discussion activity
+                      </p>
+                    </div>
+                    <div className="text-2xl font-bold text-primary">78%</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Course-wise Performance</CardTitle>
+                <CardDescription>
+                  Your progress in individual courses
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {courses.map((course) => (
+                    <div key={course.id} className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <p className="font-medium">{course.title}</p>
+                        <span className="text-sm font-medium">
+                          {course.progress}%
+                        </span>
+                      </div>
+                      <Progress value={course.progress} className="h-2" />
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="attendance" className="space-y-6">
+          <AttendanceDashboard />
+        </TabsContent>
         <TabsContent value="attendance" className="space-y-8">
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <Card>
