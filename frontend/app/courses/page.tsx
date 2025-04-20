@@ -42,107 +42,181 @@ const coursesData = [
     title: "Introduction to Computer Science",
     instructor: "Dr. Alan Turing",
     progress: 75,
-    image: "/placeholder.svg?height=100&width=200&text=CS101",
+    image: "monitor.png",
     duration: "8 weeks",
     students: 1240,
     badge: "In Progress",
     description:
       "A comprehensive introduction to the fundamental concepts of computer science, including algorithms, data structures, and problem-solving techniques.",
+    category: "Computer Science",
+    level: "Beginner",
+    prerequisites: "None",
+    skills: ["Programming", "Algorithms", "Problem Solving"],
+    isRecommended: true,
   },
   {
     id: "cs201",
     title: "Data Structures and Algorithms",
     instructor: "Prof. Ada Lovelace",
     progress: 45,
-    image: "/placeholder.svg?height=100&width=200&text=CS201",
+    image: "structure.png",
     duration: "10 weeks",
     students: 890,
     badge: "In Progress",
     description:
       "Learn about fundamental data structures and algorithms, their implementation, and analysis of their efficiency.",
+    category: "Computer Science",
+    level: "Intermediate",
+    prerequisites: "Basic Programming",
+    skills: ["Data Structures", "Algorithms", "Complexity Analysis"],
+    isRecommended: true,
   },
   {
     id: "cs301",
     title: "Database Systems",
     instructor: "Dr. Edgar Codd",
     progress: 90,
-    image: "/placeholder.svg?height=100&width=200&text=CS301",
+    image: "database.png",
     duration: "12 weeks",
     students: 650,
     badge: "Almost Complete",
     description:
       "Study the design, implementation, and management of database systems.",
+    category: "Computer Science",
+    level: "Intermediate",
+    prerequisites: "Basic Programming",
+    skills: ["SQL", "Database Design", "Normalization"],
+    isRecommended: false,
   },
   {
     id: "cs401",
     title: "Web Development",
     instructor: "Prof. Tim Berners-Lee",
     progress: 30,
-    image: "/placeholder.svg?height=100&width=200&text=CS401",
+    image: "code.png",
     duration: "8 weeks",
     students: 1120,
     badge: "In Progress",
     description: "Master modern web development techniques and frameworks.",
+    category: "Web Development",
+    level: "Beginner",
+    prerequisites: "Basic HTML/CSS",
+    skills: ["HTML", "CSS", "JavaScript", "React"],
+    isRecommended: true,
   },
   {
     id: "cs501",
     title: "Artificial Intelligence",
     instructor: "Dr. Geoffrey Hinton",
     progress: 15,
-    image: "/placeholder.svg?height=100&width=200&text=CS501",
+    image: "chip.png",
     duration: "14 weeks",
     students: 780,
     badge: "Just Started",
     description:
       "Explore the fundamentals of artificial intelligence and machine learning.",
+    category: "AI/ML",
+    level: "Advanced",
+    prerequisites: "Python, Linear Algebra",
+    skills: ["Machine Learning", "Neural Networks", "Deep Learning"],
+    isRecommended: false,
+  },
+  {
+    id: "cs601",
+    title: "Mobile App Development",
+    instructor: "Prof. Steve Jobs",
+    progress: 0,
+    image: "/placeholder.svg?height=100&width=200&text=CS601",
+    duration: "10 weeks",
+    students: 950,
+    badge: "New",
+    description:
+      "Learn to build cross-platform mobile applications using modern frameworks.",
+    category: "Mobile Development",
+    level: "Intermediate",
+    prerequisites: "JavaScript",
+    skills: ["React Native", "Mobile UI/UX", "App Deployment"],
+    isRecommended: true,
+  },
+  {
+    id: "cs701",
+    title: "Cloud Computing",
+    instructor: "Dr. Jeff Bezos",
+    progress: 0,
+    image: "/placeholder.svg?height=100&width=200&text=CS701",
+    duration: "12 weeks",
+    students: 820,
+    badge: "New",
+    description:
+      "Master cloud computing concepts and services with hands-on projects.",
+    category: "Cloud Computing",
+    level: "Intermediate",
+    prerequisites: "Basic Networking",
+    skills: ["AWS", "Azure", "Cloud Architecture"],
+    isRecommended: true,
   },
 ];
 
 // Separate component for course card to improve readability
-function CourseCard({ course }: { course: (typeof coursesData)[0] }) {
+function CourseCard({
+  course,
+  onJoinCourse,
+}: {
+  course: (typeof coursesData)[0];
+  onJoinCourse?: (courseId: string) => void;
+}) {
   return (
-    <Link key={course.id} href={`/courses/${course.id}`}>
-      <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300 h-full flex flex-col">
-        <div className="aspect-video w-full overflow-hidden">
-          <img
-            src={course.image || "/placeholder.svg"}
-            alt={course.title}
-            className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
-          />
-        </div>
-        <CardHeader className="p-4 pb-0">
-          <div className="flex items-start justify-between">
-            <CardTitle className="text-lg">{course.title}</CardTitle>
+    <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300 h-full flex flex-col">
+      <div className="relative aspect-video w-full overflow-hidden bg-muted">
+        <img
+          src={course.image}
+          alt={course.title}
+          className="absolute inset-0 h-full w-full object-cover object-center transition-transform duration-300 hover:scale-105"
+        />
+      </div>
+      <CardHeader className="p-4 pb-0">
+        <div className="flex items-start justify-between">
+          <CardTitle className="text-lg">{course.title}</CardTitle>
+          <div className="flex items-center space-x-2">
+            {course.isRecommended && (
+              <Badge variant="default" className="bg-green-500">
+                Recommended
+              </Badge>
+            )}
             <Badge variant={course.progress === 100 ? "default" : "secondary"}>
               {course.badge}
             </Badge>
           </div>
-          <CardDescription className="flex items-center">
-            <Avatar className="mr-2 h-6 w-6">
-              <AvatarImage
-                src={`/placeholder.svg?height=30&width=30&text=${course.instructor
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("")}`}
-              />
-              <AvatarFallback>
-                {course.instructor
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("")}
-              </AvatarFallback>
-            </Avatar>
-            {course.instructor}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="p-4 flex-grow">
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-sm">
-              <span>Progress</span>
-              <span>{course.progress}%</span>
-            </div>
-            <Progress value={course.progress} className="h-2" />
-          </div>
+        </div>
+        <CardDescription className="flex items-center">
+          <Avatar className="mr-2 h-6 w-6">
+            <AvatarImage
+              src={`/placeholder.svg?height=30&width=30&text=${course.instructor
+                .split(" ")
+                .map((n) => n[0])
+                .join("")}`}
+            />
+            <AvatarFallback>
+              {course.instructor
+                .split(" ")
+                .map((n) => n[0])
+                .join("")}
+            </AvatarFallback>
+          </Avatar>
+          {course.instructor}
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="p-4 flex-grow">
+        <div className="space-y-2">
+          {course.progress > 0 && (
+            <>
+              <div className="flex items-center justify-between text-sm">
+                <span>Progress</span>
+                <span>{course.progress}%</span>
+              </div>
+              <Progress value={course.progress} className="h-2" />
+            </>
+          )}
           <div className="mt-4 flex items-center justify-between text-sm text-muted-foreground">
             <div className="flex items-center">
               <Clock className="mr-1 h-4 w-4" />
@@ -158,19 +232,53 @@ function CourseCard({ course }: { course: (typeof coursesData)[0] }) {
               {course.description}
             </p>
           )}
-        </CardContent>
-        <CardFooter className="p-4 pt-0">
-          <Button variant="outline" className="w-full justify-between">
-            {course.progress === 0
-              ? "Start Learning"
-              : course.progress === 100
-              ? "View Certificate"
-              : "Continue Learning"}
+          <div className="mt-4 space-y-2">
+            <div className="flex items-center text-sm">
+              <span className="font-medium mr-2">Category:</span>
+              <Badge variant="outline">{course.category}</Badge>
+            </div>
+            <div className="flex items-center text-sm">
+              <span className="font-medium mr-2">Level:</span>
+              <Badge variant="outline">{course.level}</Badge>
+            </div>
+            <div className="flex items-center text-sm">
+              <span className="font-medium mr-2">Prerequisites:</span>
+              <span className="text-muted-foreground">
+                {course.prerequisites}
+              </span>
+            </div>
+            <div className="flex flex-wrap gap-1 mt-2">
+              {course.skills.map((skill, index) => (
+                <Badge key={index} variant="secondary" className="text-xs">
+                  {skill}
+                </Badge>
+              ))}
+            </div>
+          </div>
+        </div>
+      </CardContent>
+      <CardFooter className="p-4 pt-0">
+        {course.progress === 0 ? (
+          <Button
+            className="w-full justify-between"
+            onClick={() => onJoinCourse?.(course.id)}
+          >
+            Join Course
             <ChevronRight className="h-4 w-4" />
           </Button>
-        </CardFooter>
-      </Card>
-    </Link>
+        ) : course.progress === 100 ? (
+          <Button variant="outline" className="w-full justify-between">
+            View Certificate
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        ) : (
+          <Button variant="outline" className="w-full justify-between">
+            Continue Learning
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        )}
+      </CardFooter>
+    </Card>
   );
 }
 
@@ -197,6 +305,20 @@ export default function CoursesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("progress");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [activeTab, setActiveTab] = useState("enrolled");
+
+  const handleJoinCourse = (courseId: string) => {
+    // TODO: Implement course joining logic
+    console.log(`Joining course: ${courseId}`);
+    // Update the course progress to indicate enrollment
+    const updatedCourses = coursesData.map((course) =>
+      course.id === courseId
+        ? { ...course, progress: 1, badge: "In Progress" }
+        : course
+    );
+    // Update the courses data (in a real app, this would be an API call)
+    coursesData.splice(0, coursesData.length, ...updatedCourses);
+  };
 
   const filteredAndSortedCourses = useMemo(() => {
     let result = coursesData.filter(
@@ -229,7 +351,7 @@ export default function CoursesPage() {
     (course) => course.progress > 0 && course.progress < 100
   );
   const recommendedCourses = filteredAndSortedCourses.filter(
-    (course) => course.progress === 0
+    (course) => course.isRecommended
   );
   const completedCourses = filteredAndSortedCourses.filter(
     (course) => course.progress === 100
@@ -249,79 +371,87 @@ export default function CoursesPage() {
         </div>
       </div>
 
-      <div className="flex flex-col space-y-4 md:flex-row md:items-center md:space-x-4 md:space-y-0">
+      <div className="flex items-center space-x-4">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search courses..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9"
+            className="pl-8"
           />
         </div>
-        <div className="flex items-center space-x-2">
-          <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Sort by" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="progress">Progress</SelectItem>
-              <SelectItem value="students">Students</SelectItem>
-              <SelectItem value="title">Title</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
-          >
-            <ArrowUpDown
-              className={cn("h-4 w-4", sortOrder === "asc" ? "rotate-180" : "")}
-            />
-          </Button>
-        </div>
+        <Select value={sortBy} onValueChange={setSortBy}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Sort by" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="progress">Progress</SelectItem>
+            <SelectItem value="students">Students</SelectItem>
+            <SelectItem value="title">Title</SelectItem>
+          </SelectContent>
+        </Select>
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+        >
+          <ArrowUpDown className="h-4 w-4" />
+        </Button>
       </div>
 
-      <Tabs defaultValue="enrolled" className="space-y-6">
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="space-y-4"
+      >
         <TabsList>
-          <TabsTrigger value="enrolled">Enrolled</TabsTrigger>
+          <TabsTrigger value="enrolled">Enrolled Courses</TabsTrigger>
           <TabsTrigger value="recommended">Recommended</TabsTrigger>
           <TabsTrigger value="completed">Completed</TabsTrigger>
         </TabsList>
 
         <TabsContent value="enrolled" className="space-y-4">
-          {enrolledCourses.length === 0 ? (
-            <EmptyState message="No enrolled courses found" />
-          ) : (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {enrolledCourses.length > 0 ? (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {enrolledCourses.map((course) => (
-                <CourseCard key={course.id} course={course} />
+                <Link key={course.id} href={`/courses/${course.id}`}>
+                  <CourseCard course={course} />
+                </Link>
               ))}
             </div>
+          ) : (
+            <EmptyState message="You haven't enrolled in any courses yet." />
           )}
         </TabsContent>
 
         <TabsContent value="recommended" className="space-y-4">
-          {recommendedCourses.length === 0 ? (
-            <EmptyState message="No recommended courses found" />
-          ) : (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {recommendedCourses.length > 0 ? (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {recommendedCourses.map((course) => (
-                <CourseCard key={course.id} course={course} />
+                <CourseCard
+                  key={course.id}
+                  course={course}
+                  onJoinCourse={handleJoinCourse}
+                />
               ))}
             </div>
+          ) : (
+            <EmptyState message="No recommended courses available at the moment." />
           )}
         </TabsContent>
 
         <TabsContent value="completed" className="space-y-4">
-          {completedCourses.length === 0 ? (
-            <EmptyState message="No completed courses found" />
-          ) : (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {completedCourses.length > 0 ? (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {completedCourses.map((course) => (
-                <CourseCard key={course.id} course={course} />
+                <Link key={course.id} href={`/courses/${course.id}`}>
+                  <CourseCard course={course} />
+                </Link>
               ))}
             </div>
+          ) : (
+            <EmptyState message="You haven't completed any courses yet." />
           )}
         </TabsContent>
       </Tabs>
